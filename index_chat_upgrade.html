@@ -1,0 +1,1360 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Обменник — МБОУ СОШ №101</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=PT+Serif:wght@400;700&family=PT+Sans:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#FBF7EC; --paper2:#F3EDDD; --ink:#2B3A2E; --ink-soft:#5B6B5C;
+    --line:#C7D8C6; --margin:#C24A3E; --accent:#3B6E4E; --accent-dark:#2C5A3D;
+    --mustard:#E3A23B; --card:#ffffff; --border:#DCE3D2;
+    box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#1B241C; --paper2:#20291F; --ink:#EDEFE7; --ink-soft:#A7B4A2;
+      --line:#324435; --margin:#C24A3E; --accent:#6FAE83; --accent-dark:#5A9770;
+      --mustard:#E3A23B; --card:#242E23; --border:#33402F;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#1B241C; --paper2:#20291F; --ink:#EDEFE7; --ink-soft:#A7B4A2;
+    --line:#324435; --margin:#C24A3E; --accent:#6FAE83; --accent-dark:#5A9770;
+    --mustard:#E3A23B; --card:#242E23; --border:#33402F;
+  }
+  html{scroll-padding-top:env(safe-area-inset-top,0px);}
+  *{box-sizing:border-box;}
+  html,body{height:100%;}
+  body{
+    margin:0; background:
+      repeating-linear-gradient(to bottom, transparent 0 27px, var(--line) 27px 28px),
+      var(--paper);
+    color:var(--ink); font-family:'PT Sans',sans-serif; position:relative;
+  }
+  body::before{
+    content:""; position:fixed; top:0; bottom:0; left:38px; width:2px; background:var(--margin); opacity:.55; z-index:0;
+  }
+  header{
+    position:sticky; top:env(safe-area-inset-top,0px); z-index:5; display:flex; align-items:center; justify-content:space-between;
+    gap:12px; padding:14px 18px 14px 52px; background:var(--paper2); border-bottom:2px solid var(--border);
+  }
+  .brand{display:flex; flex-direction:column; line-height:1.15;}
+  .brand b{font-family:'PT Serif',serif; font-size:22px;}
+  .brand span{font-size:11px; color:var(--ink-soft);}
+  .profile-chip{
+    display:flex; align-items:center; gap:8px; background:var(--card); border:1px solid var(--border);
+    border-radius:999px; padding:6px 12px 6px 6px; cursor:pointer; font-size:14px; white-space:nowrap;
+  }
+  .avatar{width:26px; height:26px; border-radius:50%; background:var(--accent); color:#fff; display:flex;
+    align-items:center; justify-content:center; font-size:12px; font-weight:700; font-family:'PT Serif',serif;}
+  main{position:relative; z-index:1; padding:22px 18px 100px 52px; max-width:1000px; margin:0 auto;}
+  h1.page-title{
+    font-family:'PT Serif',serif; font-size:32px; margin:0 0 26px; position:relative;
+    display:inline-block; letter-spacing:.2px;
+  }
+  h1.page-title::after{
+    content:""; position:absolute; left:-2px; right:-6px; bottom:-8px; height:10px;
+    background:var(--mustard); opacity:.5; border-radius:3px 6px 4px 7px;
+    transform:rotate(-.6deg); z-index:-1;
+  }
+  .category-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:-10px 0 18px;}
+  .category-tab{border:1px solid var(--border);background:var(--card);color:var(--ink-soft);padding:9px 13px;border-radius:999px;font-family:'PT Sans',sans-serif;font-size:13px;font-weight:700;cursor:pointer;}
+  .category-tab.active{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .category-tab .count{opacity:.75;font-weight:400;margin-left:3px;}
+  .category-badge{display:inline-flex;align-items:center;gap:5px;align-self:flex-start;font-size:11px;padding:3px 8px;border-radius:999px;background:var(--paper2);color:var(--ink-soft);border:1px solid var(--border);}
+  .moderator-badge{display:inline-flex;align-items:center;gap:5px;font-size:10px;padding:3px 7px;border-radius:999px;background:rgba(59,110,78,.12);color:var(--accent);border:1px solid rgba(59,110,78,.25);font-weight:700;}
+  .moderation-btn{border:1px solid rgba(194,74,62,.35);background:rgba(194,74,62,.08);color:var(--margin);border-radius:8px;padding:5px 8px;font-size:11px;font-weight:700;cursor:pointer;}
+  .moderation-btn:hover{background:rgba(194,74,62,.14);}
+  .moderation-reasons{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px;}
+  .moderation-reason{width:100%;text-align:left;border:1px solid var(--border);background:var(--card);color:var(--ink);border-radius:10px;padding:11px 12px;cursor:pointer;font-size:13px;}
+  .moderation-reason:hover{background:var(--paper2);border-color:var(--accent);}
+  .moderation-note{margin:10px 0 0;color:var(--ink-soft);font-size:12px;line-height:1.4;}
+  @media(max-width:520px){.moderation-reasons{grid-template-columns:1fr;}}
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:12px;}
+  .card{
+    background:var(--card); border:1px solid var(--border); border-radius:14px; overflow:hidden;
+    display:flex; flex-direction:column; position:relative;
+    box-shadow:0 2px 10px rgba(0,0,0,.06); transition:transform .15s ease, box-shadow .15s ease;
+  }
+  @media (hover:hover){
+    .card:hover{ transform:translateY(-3px); box-shadow:0 8px 20px rgba(0,0,0,.10); }
+  }
+  .card .photo{width:100%; aspect-ratio:4/3; object-fit:cover; background:var(--paper2);}
+  .photo-placeholder{
+    width:100%; aspect-ratio:4/3; background:var(--paper2); display:flex; align-items:center; justify-content:center;
+    color:var(--ink-soft); font-size:34px;
+  }
+  .card .body{padding:10px 11px 12px; display:flex; flex-direction:column; gap:5px; flex:1;}
+  .card h3{font-family:'PT Serif',serif; margin:0; font-size:15px; line-height:1.25;}
+  .card p.desc{margin:0; font-size:12px; color:var(--ink-soft); flex:1; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+  .card{cursor:pointer;}
+  .want{
+    display:inline-flex; align-items:center; gap:6px; font-size:12.5px; background:rgba(227,162,59,.15);
+    color:var(--mustard); border:1px solid rgba(227,162,59,.4); padding:4px 9px; border-radius:999px; align-self:flex-start;
+  }
+
+  /* Detail sheet */
+  .detail-sheet{max-width:640px; padding:0; overflow:hidden; display:flex; flex-direction:column;}
+  .detail-photo{width:100%; aspect-ratio:4/3; object-fit:cover; background:var(--paper2);}
+  .detail-photo-placeholder{width:100%; aspect-ratio:4/3; background:var(--paper2); display:flex; align-items:center; justify-content:center; font-size:52px; color:var(--ink-soft);}
+  .detail-body{padding:18px 20px calc(20px + env(safe-area-inset-bottom,0px)); overflow-y:auto;}
+  .detail-body h2{font-family:'PT Serif',serif; font-size:22px; margin:0 0 8px;}
+  .detail-body .want{font-size:14px; padding:6px 12px; margin-bottom:14px;}
+  .detail-body p.full-desc{font-size:14px; line-height:1.5; color:var(--ink); margin:0 0 16px;}
+  .detail-author{display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink-soft); margin-bottom:18px;}
+  .close-x{
+    position:absolute; top:12px; right:14px; width:32px; height:32px; border-radius:50%; background:rgba(0,0,0,.35);
+    color:#fff; border:none; font-size:18px; cursor:pointer; z-index:2; line-height:0;
+  }
+
+  /* ===== Chat 2.0 ===== */
+  .chat-list-sheet{max-width:620px;padding:0;overflow:hidden;display:flex;flex-direction:column;height:min(82vh,760px);}
+  .chat-list-top{padding:18px 20px 14px;border-bottom:1px solid var(--border);background:var(--paper2);}
+  .chat-list-topline{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+  .chat-list-heading{font-family:'PT Serif',serif;font-size:25px;margin:0;display:flex;align-items:center;gap:9px;}
+  .chat-unread-count{display:none;min-width:22px;height:22px;padding:0 7px;border-radius:999px;background:var(--accent);color:#fff;font-size:11px;font-weight:700;align-items:center;justify-content:center;font-family:'PT Sans',sans-serif;}
+  .chat-search{margin-top:12px;display:flex;align-items:center;gap:8px;border:1px solid var(--border);background:var(--card);border-radius:13px;padding:0 12px;}
+  .chat-search span{font-size:16px;opacity:.7;}
+  .chat-search input{border:0!important;outline:0;background:transparent!important;padding:11px 2px!important;min-width:0;box-shadow:none!important;}
+  .chat-list{flex:1;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:5px;}
+  .chat-list-item{width:100%;display:grid;grid-template-columns:48px minmax(0,1fr) auto;gap:11px;align-items:center;text-align:left;background:transparent;border:0;border-radius:15px;padding:11px 10px;color:var(--ink);cursor:pointer;transition:background .15s ease,transform .15s ease;}
+  .chat-list-item:hover{background:var(--paper2);transform:translateX(2px);}
+  .chat-list-item.unread{background:rgba(59,110,78,.09);}
+  .chat-list-avatar{width:48px;height:48px;border-radius:15px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'PT Serif',serif;font-size:20px;font-weight:700;position:relative;flex:none;}
+  .chat-list-avatar::after{content:"";position:absolute;right:-2px;bottom:-2px;width:11px;height:11px;border-radius:50%;background:var(--accent);border:2px solid var(--paper);display:none;}
+  .chat-list-main{min-width:0;display:flex;flex-direction:column;gap:3px;}
+  .chat-list-line{display:flex;align-items:center;gap:7px;min-width:0;}
+  .chat-list-name{font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .chat-list-title{font-size:11px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .chat-list-preview{font-size:12px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.35;}
+  .chat-list-item.unread .chat-list-name,.chat-list-item.unread .chat-list-preview{color:var(--ink);}
+  .chat-list-meta{align-self:stretch;display:flex;flex-direction:column;align-items:flex-end;justify-content:flex-start;gap:6px;min-width:45px;}
+  .chat-list-time{font-size:10px;color:var(--ink-soft);white-space:nowrap;}
+  .chat-unread-dot{display:none;min-width:19px;height:19px;padding:0 5px;border-radius:999px;background:var(--accent);color:#fff;font-size:10px;font-weight:700;align-items:center;justify-content:center;}
+  .chat-list-item.unread .chat-unread-dot{display:flex;}
+  .chat-list-empty{color:var(--ink-soft);font-size:13px;text-align:center;padding:50px 18px;line-height:1.5;}
+  .chat-list-empty-icon{font-size:40px;margin-bottom:8px;opacity:.75;}
+
+  .chat-sheet{max-width:620px;display:flex;flex-direction:column;height:min(86vh,820px);padding:0;overflow:hidden;}
+  .chat-topbar{display:flex;align-items:center;gap:10px;padding:11px 13px;border-bottom:1px solid var(--border);background:var(--paper2);flex:none;}
+  .chat-back{width:38px;height:38px;border-radius:12px;border:1px solid var(--border);background:var(--card);color:var(--ink);cursor:pointer;font-size:20px;display:flex;align-items:center;justify-content:center;flex:none;}
+  .chat-person-avatar{width:40px;height:40px;border-radius:13px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:'PT Serif',serif;font-size:17px;font-weight:700;flex:none;}
+  .chat-top-info{min-width:0;flex:1;}
+  .chat-top-name{font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .chat-top-sub{font-size:11px;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:2px;}
+  .chat-listing-mini{display:flex;align-items:center;gap:6px;border:1px solid var(--border);background:var(--card);border-radius:10px;padding:7px 9px;max-width:180px;cursor:pointer;}
+  .chat-listing-mini-photo{width:31px;height:31px;border-radius:7px;object-fit:cover;background:var(--paper2);flex:none;}
+  .chat-listing-mini-text{min-width:0;font-size:10px;line-height:1.2;}
+  .chat-listing-mini-text b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;}
+  .chat-listing-mini-text span{display:block;color:var(--ink-soft);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:110px;}
+  .chat-messages{flex:1;overflow-y:auto;padding:16px 13px 12px;display:flex;flex-direction:column;gap:4px;background:linear-gradient(rgba(0,0,0,.015),rgba(0,0,0,.015)),var(--paper);scroll-behavior:smooth;}
+  .chat-date-separator{align-self:center;margin:8px 0 5px;padding:4px 9px;border-radius:999px;background:var(--paper2);border:1px solid var(--border);font-size:10px;color:var(--ink-soft);}
+  .msg-row{display:flex;align-items:flex-end;gap:6px;margin:1px 0;}
+  .msg-row.me{justify-content:flex-end;}
+  .msg{max-width:min(78%,440px);padding:8px 10px 6px;border-radius:15px;font-size:14px;line-height:1.38;word-break:break-word;box-shadow:0 1px 2px rgba(0,0,0,.04);}
+  .msg.me{background:var(--accent);color:#fff;border-bottom-right-radius:5px;}
+  .msg.them{background:var(--card);border:1px solid var(--border);border-bottom-left-radius:5px;}
+  .msg-time{font-size:9px;opacity:.7;float:right;margin:4px 0 0 9px;white-space:nowrap;line-height:1;}
+  .msg-text{white-space:pre-wrap;}
+  .chat-empty{color:var(--ink-soft);font-size:13px;text-align:center;margin:auto;max-width:260px;line-height:1.5;}
+  .chat-empty-icon{font-size:38px;display:block;margin-bottom:8px;}
+  .chat-input-wrap{padding:8px 10px calc(9px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--border);background:var(--paper2);flex:none;}
+  .chat-input-row{display:flex;align-items:flex-end;gap:7px;padding:0;border:1px solid var(--border);background:var(--card);border-radius:16px;overflow:hidden;}
+  .chat-input-row textarea{flex:1;min-height:42px;max-height:120px;resize:none;border:0!important;background:transparent!important;outline:0;padding:11px 8px 10px 13px!important;font-size:14px;line-height:1.35;box-shadow:none!important;}
+  .chat-send{width:42px;height:42px;margin:3px;border-radius:13px;background:var(--accent);color:#fff;border:0;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:transform .12s ease,opacity .12s ease;}
+  .chat-send:active{transform:scale(.94);}
+  .chat-send:disabled{opacity:.45;cursor:not-allowed;}
+  .chat-input-hint{font-size:9px;color:var(--ink-soft);padding:4px 5px 0;}
+  .chat-loading{opacity:.65;pointer-events:none;}
+  @media(max-width:620px){
+    .chat-list-sheet,.chat-sheet{max-width:100%;height:100dvh;max-height:100dvh;border-radius:0;}
+    .chat-list-top{padding-top:calc(13px + env(safe-area-inset-top,0px));}
+    .chat-topbar{padding-top:calc(9px + env(safe-area-inset-top,0px));}
+    .chat-listing-mini{display:none;}
+    .chat-messages{padding-left:9px;padding-right:9px;}
+    .msg{max-width:84%;}
+  }
+  .card footer{display:flex; align-items:center; justify-content:space-between; font-size:12px; color:var(--ink-soft); margin-top:4px;}
+  .del-btn{background:none; border:none; color:var(--margin); cursor:pointer; font-size:12px; padding:0;}
+  .empty{
+    text-align:center; padding:60px 20px; color:var(--ink-soft);
+  }
+  .empty b{display:block; font-family:'PT Serif',serif; font-size:19px; color:var(--ink); margin-bottom:6px;}
+  .fab{
+    position:fixed; right:20px; bottom:calc(20px + env(safe-area-inset-bottom,0px)); width:56px; height:56px; border-radius:50%;
+    background:var(--accent); color:#fff; border:none; font-size:28px; cursor:pointer; box-shadow:0 4px 14px rgba(0,0,0,.25);
+    z-index:6; line-height:0;
+  }
+  .fab:active{background:var(--accent-dark);}
+  .overlay{
+    position:fixed; inset:0; background:rgba(0,0,0,.45); z-index:10; display:none; align-items:flex-end;
+    justify-content:center; padding-top:env(safe-area-inset-top,0px);
+  }
+  .overlay.open{display:flex;}
+  .sheet{
+    background:var(--paper); width:100%; max-width:560px; border-radius:16px 16px 0 0; padding:18px 20px calc(20px + env(safe-area-inset-bottom,0px));
+    max-height:88vh; overflow-y:auto; border-top:1px solid var(--border);
+  }
+  .sheet h2{font-family:'PT Serif',serif; margin:0 0 14px; font-size:20px;}
+  label{display:block; font-size:13px; color:var(--ink-soft); margin:14px 0 6px;}
+  input[type=text], textarea{
+    width:100%; padding:10px 12px; border:1px solid var(--border); border-radius:8px; background:var(--card);
+    color:var(--ink); font-family:'PT Sans',sans-serif; font-size:14px;
+  }
+  textarea{min-height:70px; resize:vertical;}
+  .photo-drop{
+    border:2px dashed var(--border); border-radius:10px; padding:16px; text-align:center; color:var(--ink-soft);
+    cursor:pointer; font-size:13px; position:relative; overflow:hidden;
+  }
+  .photo-drop img{max-width:100%; max-height:160px; border-radius:8px; display:block; margin:0 auto;}
+  .sheet-actions{display:flex; gap:10px; margin-top:18px;}
+  button.primary{
+    flex:1; background:var(--accent); color:#fff; border:none; padding:12px; border-radius:8px; font-size:15px;
+    font-weight:700; cursor:pointer; font-family:'PT Sans',sans-serif;
+  }
+  button.ghost{
+    background:none; border:1px solid var(--border); color:var(--ink); padding:12px 16px; border-radius:8px; cursor:pointer;
+  }
+  .hint{font-size:12px; color:var(--ink-soft); margin-top:4px;}
+  input[type=file]{display:none;}
+
+  .auth-sheet{max-width:430px;}
+  .auth-tabs{display:flex;gap:8px;margin-bottom:14px;}
+  .auth-tabs button{flex:1;}
+  .auth-error{font-size:12px;color:var(--margin);margin-top:8px;min-height:16px;}
+  .auth-email{font-size:12px;color:var(--ink-soft);margin-top:8px;}
+
+  /* Beautiful auth */
+  .auth-sheet{max-width:460px;padding:0;overflow:hidden;}
+  .auth-hero{padding:24px 22px 18px;background:linear-gradient(135deg,var(--accent),var(--accent-dark));color:#fff;position:relative;}
+  .auth-hero-icon{width:52px;height:52px;border-radius:16px;background:rgba(255,255,255,.16);display:flex;align-items:center;justify-content:center;font-size:26px;margin-bottom:12px;border:1px solid rgba(255,255,255,.18);}
+  .auth-hero h2{margin:0 0 5px;color:#fff;font-size:24px;}
+  .auth-hero p{margin:0;color:rgba(255,255,255,.86);font-size:13px;line-height:1.45;}
+  .auth-body{padding:18px 22px calc(22px + env(safe-area-inset-bottom,0px));}
+  .auth-tabs{display:grid;grid-template-columns:1fr 1fr;gap:6px;background:var(--paper2);padding:4px;border-radius:10px;margin-bottom:16px;}
+  .auth-tabs button{border:0;padding:10px 8px;border-radius:8px;background:transparent;color:var(--ink-soft);font-weight:700;}
+  .auth-tabs button.active{background:var(--card);color:var(--ink);box-shadow:0 1px 5px rgba(0,0,0,.08);}
+  .auth-field{position:relative;}
+  .auth-field input{width:100%;padding:10px 42px 10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--ink);font-family:'PT Sans',sans-serif;font-size:14px;}
+  .auth-field-icon{position:absolute;right:12px;top:50%;transform:translateY(-50%);opacity:.55;pointer-events:none;}
+  .auth-note{display:flex;gap:8px;align-items:flex-start;background:var(--paper2);border:1px solid var(--border);border-radius:10px;padding:10px 11px;margin-top:12px;font-size:12px;color:var(--ink-soft);line-height:1.4;}
+  .auth-error{min-height:18px;margin-top:10px;color:var(--margin);font-size:13px;line-height:1.35;}
+  .auth-success{display:none;text-align:center;padding:28px 22px 26px;}
+  .auth-success.open{display:block;}
+  .auth-success-icon{width:68px;height:68px;margin:0 auto 14px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(59,110,78,.13);font-size:34px;}
+  .auth-success h2{font-family:'PT Serif',serif;font-size:23px;margin:0 0 8px;}
+  .auth-success p{margin:0;color:var(--ink-soft);font-size:14px;line-height:1.5;}
+  .auth-email-highlight{display:inline-block;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;vertical-align:bottom;font-weight:700;color:var(--ink);}
+  .auth-spam{margin:16px 0 0;padding:12px;border-radius:10px;background:rgba(227,162,59,.13);border:1px solid rgba(227,162,59,.35);font-size:12px;line-height:1.45;color:var(--ink);}
+  .auth-countdown{margin-top:12px;font-size:12px;color:var(--ink-soft);}
+  .auth-success-actions{display:flex;gap:8px;margin-top:18px;}
+  .auth-success-actions button{flex:1;}
+  .auth-close-link{width:100%;margin-top:8px;}
+  .auth-locked{opacity:.7;cursor:not-allowed!important;}
+  .password-reset-view{display:none;padding:26px 22px 24px;}
+  .password-reset-view.open{display:block;}
+  .password-reset-icon{width:64px;height:64px;border-radius:18px;background:var(--paper2);display:flex;align-items:center;justify-content:center;font-size:30px;margin:0 auto 14px;}
+  .password-reset-view h2{font-family:'PT Serif',serif;font-size:23px;text-align:center;margin:0 0 7px;}
+  .password-reset-view .reset-subtitle{text-align:center;color:var(--ink-soft);font-size:13px;line-height:1.45;margin:0 0 18px;}
+  .password-reset-error{min-height:18px;margin-top:10px;color:var(--margin);font-size:13px;line-height:1.35;}
+  .password-reset-success{display:none;text-align:center;padding:8px 0 4px;}
+  .password-reset-success.open{display:block;}
+  .password-reset-success h3{font-family:'PT Serif',serif;font-size:21px;margin:0 0 8px;}
+  .password-reset-success p{margin:0;color:var(--ink-soft);font-size:13px;line-height:1.5;}
+  @media(max-width:520px){.auth-sheet{max-width:100%;}.auth-body{padding-left:18px;padding-right:18px;}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <b>🔄 Обменник</b>
+    <span>МБОУ СОШ №101 · Воронеж</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:8px;">
+    <button class="ghost" id="openChatsBtn" style="padding:8px 10px;">💬 Чаты</button>
+    <div class="profile-chip" id="profileChip">
+      <div class="avatar" id="avatarLetter">?</div>
+      <span id="nickLabel">Задать ник</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <h1 class="page-title">Доска обмена</h1>
+  <div class="category-tabs" id="categoryTabs">
+    <button class="category-tab active" data-category="all">Все <span class="count" id="countAll"></span></button>
+    <button class="category-tab" data-category="meme">😂 Мемы <span class="count" id="countMeme"></span></button>
+    <button class="category-tab" data-category="virtual">🎮 Виртуальные <span class="count" id="countVirtual"></span></button>
+    <button class="category-tab" data-category="real">📦 Реальные <span class="count" id="countReal"></span></button>
+  </div>
+  <div class="grid" id="grid"></div>
+</main>
+
+<button class="fab" id="fabAdd" aria-label="Добавить объявление">+</button>
+
+<!-- Auth sheet -->
+<div class="overlay" id="authOverlay">
+  <div class="sheet auth-sheet">
+    <div id="authFormView">
+      <div class="auth-hero">
+        <div class="auth-hero-icon">🔐</div>
+        <h2 id="authTitle">Вход</h2>
+        <p id="authSubtitle">Войди в аккаунт, чтобы общаться и размещать объявления.</p>
+      </div>
+      <div class="auth-body">
+        <div class="auth-tabs">
+          <button class="active" id="authLoginTab">Войти</button>
+          <button id="authRegisterTab">Регистрация</button>
+        </div>
+        <label for="authEmail">Email</label>
+        <div class="auth-field">
+          <input type="email" id="authEmail" autocomplete="email" placeholder="you@example.com">
+          <span class="auth-field-icon">✉️</span>
+        </div>
+        <label for="authPassword">Пароль</label>
+        <div class="auth-field">
+          <input type="password" id="authPassword" autocomplete="current-password" placeholder="Минимум 6 символов">
+          <span class="auth-field-icon">🔒</span>
+        </div>
+        <div class="auth-error" id="authError"></div>
+        <div class="sheet-actions">
+          <button class="ghost" id="authCancel">Закрыть</button>
+          <button class="primary" id="authSubmit">Войти</button>
+        </div>
+        <button class="ghost" id="authReset" style="width:100%;margin-top:8px;display:none;">Забыли пароль?</button>
+        <div class="auth-note"><span>🛡️</span><span>После регистрации нужно подтвердить email. Письмо может попасть в папку «Спам».</span></div>
+      </div>
+    </div>
+
+    <div class="auth-success" id="authSuccessView">
+      <div class="auth-success-icon">✉️</div>
+      <h2>Письмо отправлено</h2>
+      <p>Письмо с подтверждением отправлено на<br><span class="auth-email-highlight" id="authSuccessEmail"></span></p>
+      <div class="auth-spam"><b>Не забудь проверить «Спам»</b><br>Если письма нет во «Входящих», проверь «Спам», «Нежелательная почта» и поиск по адресу <b>stormsurf@msgwing.com</b>.</div>
+      <div class="auth-countdown" id="authCountdown">Повторная отправка будет доступна через 5:00</div>
+      <div class="auth-success-actions">
+        <button class="primary" id="authResendBtn" disabled>Подождать 5:00</button>
+        <button class="ghost" id="authSuccessClose">Закрыть</button>
+      </div>
+      <button class="ghost auth-close-link" id="authSuccessLogin">Я уже подтвердил email — войти</button>
+    </div>
+
+    <div class="password-reset-view" id="passwordResetView">
+      <div id="passwordResetForm">
+        <div class="password-reset-icon">🔑</div>
+        <h2>Новый пароль</h2>
+        <p class="reset-subtitle">Ссылка из письма подтверждена. Придумай новый пароль для своего аккаунта.</p>
+        <label for="newPassword">Новый пароль</label>
+        <div class="auth-field">
+          <input type="password" id="newPassword" autocomplete="new-password" placeholder="Минимум 6 символов">
+          <span class="auth-field-icon">🔒</span>
+        </div>
+        <label for="newPassword2">Повтори новый пароль</label>
+        <div class="auth-field">
+          <input type="password" id="newPassword2" autocomplete="new-password" placeholder="Повтори пароль">
+          <span class="auth-field-icon">🔒</span>
+        </div>
+        <div class="password-reset-error" id="passwordResetError"></div>
+        <div class="sheet-actions">
+          <button class="ghost" id="passwordResetCancel">Отмена</button>
+          <button class="primary" id="passwordResetSave">Сохранить пароль</button>
+        </div>
+      </div>
+      <div class="password-reset-success" id="passwordResetSuccess">
+        <div class="password-reset-icon">✅</div>
+        <h3>Пароль изменён</h3>
+        <p>Теперь войди в аккаунт с новым паролем.</p>
+        <div class="sheet-actions" style="margin-top:18px;">
+          <button class="primary" id="passwordResetLogin">Войти</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Profile sheet -->
+<div class="overlay" id="profileOverlay">
+  <div class="sheet">
+    <h2>Твой профиль</h2>
+    <label for="nickInput">Никнейм</label>
+    <input type="text" id="nickInput" placeholder="Например, Кот_из_9Б" maxlength="24">
+    <p class="hint" id="profileEmailHint"></p>
+    <p class="hint">Этот ник будут видеть другие рядом с твоими объявлениями.</p>
+    <div class="sheet-actions">
+      <button class="ghost" id="profileCancel">Отмена</button>
+      <button class="primary" id="profileSave">Сохранить</button>
+    </div>
+    <button class="ghost" id="profileLogout" style="width:100%;margin-top:8px;color:var(--margin);">Выйти из аккаунта</button>
+  </div>
+</div>
+
+<!-- New listing sheet -->
+<div class="overlay" id="addOverlay">
+  <div class="sheet">
+    <h2>Новое объявление</h2>
+    <label>Фото товара</label>
+    <div class="photo-drop" id="photoDrop">
+      <span id="photoDropText">Нажми, чтобы выбрать фото</span>
+    </div>
+    <input type="file" id="photoInput" accept="image/*">
+
+    <label for="titleInput">Название товара</label>
+    <input type="text" id="titleInput" placeholder="Например, Наушники JBL" maxlength="60">
+
+    <label for="descInput">Описание</label>
+    <textarea id="descInput" placeholder="Состояние, особенности, почему отдаёшь"></textarea>
+
+    <label for="wantInput">На что меняешь</label>
+    <input type="text" id="wantInput" placeholder="Например, на настольную игру или комиксы" maxlength="80">
+
+    <label for="categoryInput">Раздел</label>
+    <select id="categoryInput" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--ink);font-family:'PT Sans',sans-serif;font-size:14px;">
+      <option value="meme">😂 Мемы — максимум 1 объявление</option>
+      <option value="virtual">🎮 Виртуальные — максимум 2</option>
+      <option value="real" selected>📦 Реальные — максимум 2</option>
+    </select>
+    <p class="hint" id="categoryLimitHint">На одном аккаунте можно иметь не более 2 реальных объявлений.</p>
+
+    <div class="sheet-actions">
+      <button class="ghost" id="addCancel">Отмена</button>
+      <button class="primary" id="addSave">Разместить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Moderation sheet -->
+<div class="overlay" id="moderationOverlay">
+  <div class="sheet" style="max-width:520px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <h2 style="margin:0;">🛡️ Модерация</h2>
+      <button class="ghost" id="moderationCancel">Отмена</button>
+    </div>
+    <p style="margin:10px 0 0;color:var(--ink-soft);font-size:13px;line-height:1.45;">Выбери причину удаления объявления. Действие будет записано в журнале модерации.</p>
+    <div class="moderation-reasons">
+      <button class="moderation-reason" data-reason="Запрещённый контент">🚫 Запрещённый контент</button>
+      <button class="moderation-reason" data-reason="Контент не по возрасту">🔞 Контент не по возрасту</button>
+      <button class="moderation-reason" data-reason="Оскорбления">🗣 Оскорбления</button>
+      <button class="moderation-reason" data-reason="Мошенничество">🧑‍💻 Мошенничество</button>
+      <button class="moderation-reason" data-reason="Спам">📢 Спам</button>
+      <button class="moderation-reason" data-reason="Другое">❓ Другое</button>
+    </div>
+    <p class="moderation-note">Объявление будет удалено для всех пользователей. Фото также будет удалено из хранилища.</p>
+    <div class="auth-error" id="moderationError" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<!-- Listing detail sheet (Avito-style) -->
+<div class="overlay" id="detailOverlay">
+  <div class="sheet detail-sheet" style="position:relative;">
+    <button class="close-x" id="detailClose">✕</button>
+    <div id="detailPhotoWrap"></div>
+    <div class="detail-body">
+      <h2 id="detailTitle"></h2>
+      <span class="category-badge" id="detailCategory" style="margin-bottom:10px;"></span>
+      <span class="want" id="detailWant"></span>
+      <p class="full-desc" id="detailDesc"></p>
+      <div class="detail-author">
+        <div class="avatar" id="detailAvatar" style="width:22px;height:22px;font-size:11px;"></div>
+        <span id="detailAuthor"></span>
+      </div>
+      <div class="sheet-actions" style="margin-top:0;">
+        <button class="primary" id="detailChatBtn">💬 Открыть чат</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Chats list -->
+<div class="overlay" id="chatsOverlay">
+  <div class="sheet chat-list-sheet">
+    <div class="chat-list-top">
+      <div class="chat-list-topline">
+        <h2 class="chat-list-heading">💬 Чаты <span class="chat-unread-count" id="chatUnreadCount"></span></h2>
+        <button class="ghost" id="chatsClose">Закрыть</button>
+      </div>
+      <div class="chat-search">
+        <span>⌕</span>
+        <input type="text" id="chatSearchInput" placeholder="Поиск по чатам..." autocomplete="off">
+      </div>
+    </div>
+    <div class="chat-list" id="chatList"></div>
+  </div>
+</div>
+
+<!-- Chat sheet -->
+<div class="overlay" id="chatOverlay">
+  <div class="sheet chat-sheet">
+    <div class="chat-topbar">
+      <button class="chat-back" id="chatClose" aria-label="Назад">‹</button>
+      <div class="chat-person-avatar" id="chatAvatar">?</div>
+      <div class="chat-top-info">
+        <div class="chat-top-name" id="chatHeader">Чат</div>
+        <div class="chat-top-sub" id="chatSubheader">Объявление</div>
+      </div>
+      <button class="chat-listing-mini" id="chatListingMini" type="button" aria-label="Открыть объявление">
+        <span id="chatListingMiniPhoto"></span>
+        <span class="chat-listing-mini-text"><b id="chatListingMiniTitle">Объявление</b><span id="chatListingMiniWant"></span></span>
+      </button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-wrap">
+      <div class="chat-input-row">
+        <textarea id="chatInput" rows="1" maxlength="1000" placeholder="Написать сообщение..."></textarea>
+        <button class="chat-send" id="chatSend" aria-label="Отправить">➤</button>
+      </div>
+      <div class="chat-input-hint">Enter — отправить · Shift+Enter — новая строка</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ===== Supabase ===== */
+const SUPABASE_URL = "https://cnlcaeqrdvbcsecniaig.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_V7JeROrWTj3Xm3E3LXFW_w_vwQ1P9ZF";
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const STORAGE_BUCKET = "listing-photos";
+
+let authUser = null;
+let listings = [];
+let nickname = "";
+let isModerator = false;
+let pendingModerationListingId = null;
+let pendingPhoto = null;
+let currentListingId = null;
+let activeCategory = "all";
+const CATEGORY_LIMITS = { meme: 1, virtual: 2, real: 2 };
+const CATEGORY_NAMES = { meme: "мемов", virtual: "виртуальных", real: "реальных" };
+const CATEGORY_LABELS = { meme: "😂 Мем", virtual: "🎮 Виртуальное", real: "📦 Реальное" };
+
+async function restoreSession(){
+  const { data, error } = await sb.auth.getSession();
+  if(error) throw error;
+  authUser = data?.session?.user || null;
+  return authUser;
+}
+
+async function loadModeratorStatus(){
+  isModerator=false;
+  if(!authUser || !isEmailConfirmed()) return;
+  const { data, error } = await sb.rpc("is_moderator");
+  if(error){ console.warn("Не удалось проверить права модератора:", error); return; }
+  isModerator = data === true;
+}
+
+function isEmailConfirmed(){
+  return !!(authUser && authUser.email_confirmed_at);
+}
+
+function requireAuth(actionText){
+  if(isEmailConfirmed()) return true;
+  openAuth("login");
+  if(actionText){
+    document.getElementById("authError").textContent = authUser
+      ? "Сначала подтверди email по ссылке из письма."
+      : "Чтобы " + actionText + ", войди или зарегистрируйся.";
+  }
+  return false;
+}
+
+function updateAuthUI(){
+  const profileChip=document.getElementById("profileChip");
+  const chatsBtn=document.getElementById("openChatsBtn");
+  if(authUser){
+    chatsBtn.textContent="💬 Чаты";
+    document.getElementById("nickLabel").textContent=nickname || "Задать ник";
+  }else{
+    chatsBtn.textContent="💬 Войти";
+    document.getElementById("nickLabel").textContent="Войти";
+    document.getElementById("avatarLetter").textContent="→";
+  }
+}
+
+let authMode="login";
+const authOverlay=document.getElementById("authOverlay");
+const AUTH_COOLDOWN_MS=5*60*1000;
+const AUTH_COOLDOWN_KEY="exchange101_signup_cooldowns_v1";
+let authCooldownTimer=null;
+let pendingSignupEmail="";
+
+function getCooldowns(){
+  try{return JSON.parse(localStorage.getItem(AUTH_COOLDOWN_KEY)||"{}");}
+  catch{return {};}
+}
+function setCooldown(email){
+  const key=email.trim().toLowerCase();
+  const data=getCooldowns();
+  data[key]=Date.now()+AUTH_COOLDOWN_MS;
+  localStorage.setItem(AUTH_COOLDOWN_KEY,JSON.stringify(data));
+}
+function getCooldownUntil(email){
+  const key=email.trim().toLowerCase();
+  const until=Number(getCooldowns()[key]||0);
+  return until>Date.now()?until:0;
+}
+function formatCountdown(ms){
+  const total=Math.max(0,Math.ceil(ms/1000));
+  const m=Math.floor(total/60);
+  const sec=String(total%60).padStart(2,"0");
+  return `${m}:${sec}`;
+}
+function stopAuthCountdown(){
+  if(authCooldownTimer){clearInterval(authCooldownTimer);authCooldownTimer=null;}
+}
+function startAuthCountdown(email){
+  stopAuthCountdown();
+  const btn=document.getElementById("authResendBtn");
+  const label=document.getElementById("authCountdown");
+  const tick=()=>{
+    const until=getCooldownUntil(email);
+    if(!until){
+      btn.disabled=false;
+      btn.classList.remove("auth-locked");
+      btn.textContent="Отправить ещё раз";
+      label.textContent="Можно запросить письмо повторно.";
+      stopAuthCountdown();
+      return;
+    }
+    btn.disabled=true;
+    btn.classList.add("auth-locked");
+    btn.textContent=`Подождать ${formatCountdown(until-Date.now())}`;
+    label.textContent=`Повторная отправка будет доступна через ${formatCountdown(until-Date.now())}`;
+  };
+  tick();
+  authCooldownTimer=setInterval(tick,1000);
+}
+function showAuthForm(mode="login"){
+  authMode=mode;
+  stopAuthCountdown();
+  document.getElementById("passwordResetView").classList.remove("open");
+  document.getElementById("passwordResetForm").style.display="block";
+  document.getElementById("passwordResetSuccess").classList.remove("open");
+  document.getElementById("authFormView").style.display="block";
+  document.getElementById("authSuccessView").classList.remove("open");
+  document.getElementById("authTitle").textContent=mode==="register"?"Создание аккаунта":"С возвращением";
+  document.getElementById("authSubtitle").textContent=mode==="register"
+    ?"Зарегистрируйся по email — это займёт меньше минуты."
+    :"Войди в аккаунт, чтобы общаться и размещать объявления.";
+  document.getElementById("authSubmit").textContent=mode==="register"?"Зарегистрироваться":"Войти";
+  document.getElementById("authReset").style.display=mode==="login"?"block":"none";
+  document.getElementById("authError").textContent="";
+  document.getElementById("authLoginTab").classList.toggle("active",mode==="login");
+  document.getElementById("authRegisterTab").classList.toggle("active",mode==="register");
+}
+function openAuth(mode="login"){showAuthForm(mode);authOverlay.classList.add("open");}
+function showSignupSuccess(email){
+  pendingSignupEmail=email.trim();
+  document.getElementById("authFormView").style.display="none";
+  document.getElementById("authSuccessView").classList.add("open");
+  document.getElementById("authSuccessEmail").textContent=pendingSignupEmail;
+  startAuthCountdown(pendingSignupEmail);
+}
+
+document.getElementById("authLoginTab").addEventListener("click",()=>showAuthForm("login"));
+document.getElementById("authRegisterTab").addEventListener("click",()=>showAuthForm("register"));
+document.getElementById("authCancel").addEventListener("click",()=>authOverlay.classList.remove("open"));
+document.getElementById("authSuccessClose").addEventListener("click",()=>{stopAuthCountdown();authOverlay.classList.remove("open");});
+document.getElementById("authSuccessLogin").addEventListener("click",()=>showAuthForm("login"));
+
+document.getElementById("authSubmit").addEventListener("click",async()=>{
+  const email=document.getElementById("authEmail").value.trim();
+  const password=document.getElementById("authPassword").value;
+  const err=document.getElementById("authError");
+  err.textContent="";
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent="Введи корректный email, например name@mail.ru";return;}
+  if(password.length<6){err.textContent="Пароль должен быть не короче 6 символов.";return;}
+  const btn=document.getElementById("authSubmit");
+  if(authMode==="register"){
+    const until=getCooldownUntil(email);
+    if(until){err.textContent=`Для этого email уже был запрос. Повторить можно через ${formatCountdown(until-Date.now())}.`;return;}
+  }
+  btn.disabled=true;
+  try{
+    if(authMode==="register"){
+      const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:`${location.origin}${location.pathname}`}});
+      if(error) throw error;
+      setCooldown(email);
+      if(data?.session?.user){
+        authUser=data.session.user;
+        await loadProfile();
+        authOverlay.classList.remove("open");
+        updateAuthUI();renderProfile();renderListings();
+      }else{showSignupSuccess(email);}
+    }else{
+      const {data,error}=await sb.auth.signInWithPassword({email,password});
+      if(error) throw error;
+      authUser=data.user;
+      if(!isEmailConfirmed()) throw new Error("Email ещё не подтверждён. Открой письмо и перейди по ссылке подтверждения.");
+      await loadProfile();
+      authOverlay.classList.remove("open");
+      updateAuthUI();renderProfile();renderListings();
+    }
+  }catch(e){err.textContent=e.message||"Не удалось выполнить действие.";}
+  finally{btn.disabled=false;}
+});
+
+document.getElementById("authResendBtn").addEventListener("click",async()=>{
+  const email=pendingSignupEmail.trim();
+  if(!email||getCooldownUntil(email))return;
+  const btn=document.getElementById("authResendBtn");btn.disabled=true;
+  try{
+    const {error}=await sb.auth.resend({type:"signup",email,options:{emailRedirectTo:`${location.origin}${location.pathname}`}});
+    if(error)throw error;
+    setCooldown(email);startAuthCountdown(email);
+  }catch(e){document.getElementById("authCountdown").textContent=e.message||"Не удалось отправить письмо повторно.";startAuthCountdown(email);}
+});
+
+document.getElementById("authReset").addEventListener("click",async()=>{
+  const email=document.getElementById("authEmail").value.trim();
+  const err=document.getElementById("authError");
+  if(!email){err.textContent="Сначала введи email.";return;}
+  const btn=document.getElementById("authReset");
+  btn.disabled=true;
+  try{
+    const redirectTo=`${location.origin}${location.pathname}`;
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
+    if(error) throw error;
+    err.textContent="Письмо для восстановления отправлено. Проверь «Входящие» и «Спам».";
+  }catch(e){
+    err.textContent=e.message||"Не удалось отправить письмо для восстановления.";
+  }finally{btn.disabled=false;}
+});
+
+function showPasswordResetView(){
+  stopAuthCountdown();
+  document.getElementById("authFormView").style.display="none";
+  document.getElementById("authSuccessView").classList.remove("open");
+  document.getElementById("passwordResetView").classList.add("open");
+  document.getElementById("passwordResetForm").style.display="block";
+  document.getElementById("passwordResetSuccess").classList.remove("open");
+  document.getElementById("passwordResetError").textContent="";
+  document.getElementById("newPassword").value="";
+  document.getElementById("newPassword2").value="";
+  authOverlay.classList.add("open");
+}
+
+document.getElementById("passwordResetCancel").addEventListener("click",async()=>{
+  await sb.auth.signOut();
+  document.getElementById("passwordResetView").classList.remove("open");
+  showAuthForm("login");
+});
+
+document.getElementById("passwordResetSave").addEventListener("click",async()=>{
+  const p1=document.getElementById("newPassword").value;
+  const p2=document.getElementById("newPassword2").value;
+  const err=document.getElementById("passwordResetError");
+  const btn=document.getElementById("passwordResetSave");
+  err.textContent="";
+  if(p1.length<6){err.textContent="Пароль должен быть не короче 6 символов.";return;}
+  if(p1!==p2){err.textContent="Пароли не совпадают.";return;}
+  btn.disabled=true;
+  try{
+    const {error}=await sb.auth.updateUser({password:p1});
+    if(error) throw error;
+    // После сброса пароля завершаем recovery-сессию: пользователю нужно войти заново.
+    await sb.auth.signOut();
+    authUser=null; nickname=""; isModerator=false; updateAuthUI(); renderProfile();
+    document.getElementById("passwordResetForm").style.display="none";
+    document.getElementById("passwordResetSuccess").classList.add("open");
+  }catch(e){err.textContent=e.message||"Не удалось изменить пароль. Возможно, ссылка уже истекла — запроси письмо ещё раз.";}
+  finally{btn.disabled=false;}
+});
+
+document.getElementById("passwordResetLogin").addEventListener("click",()=>{
+  document.getElementById("passwordResetView").classList.remove("open");
+  showAuthForm("login");
+});
+
+sb.auth.onAuthStateChange(async(_event,session)=>{
+  authUser=session?.user||null;
+  await loadModeratorStatus();
+  if(_event==="PASSWORD_RECOVERY"){
+    showPasswordResetView();
+    return;
+  }
+  if(authUser){try{await loadProfile();}catch(e){console.error(e);}}else{nickname="";}
+  updateAuthUI();renderProfile();renderListings();
+  if(authUser) refreshChatUnreadSilently();
+});
+
+async function loadProfile(){
+  // Профиль создаём для обычного email-пользователя. Здесь только читаем его.
+  const { data, error } = await sb.from("profiles")
+    .select("id,nickname")
+    .eq("id", authUser.id)
+    .maybeSingle();
+
+  if(error) throw error;
+
+  // Защита от редкого случая, когда триггер ещё не успел создать строку.
+  if(!data){
+    const { data: created, error: createError } = await sb.from("profiles")
+      .insert({ id: authUser.id, nickname: null })
+      .select("id,nickname")
+      .single();
+    if(createError) throw createError;
+    nickname = created?.nickname || "";
+    return;
+  }
+
+  nickname = data.nickname || "";
+}
+
+async function saveProfile(nick){
+  const { data, error } = await sb.from("profiles")
+    .update({ nickname: nick })
+    .eq("id", authUser.id)
+    .select("id,nickname")
+    .single();
+
+  if(error) throw error;
+  if(!data) throw new Error("Профиль пользователя не найден");
+  nickname = data.nickname || "";
+}
+
+async function loadListings(){
+  const { data, error } = await sb.from("listings").select("id,title,description,want,photo_url,photo_path,author,created_at,user_id,category").order("created_at", { ascending:false });
+  if(error) throw error;
+  listings = data || [];
+}
+
+async function compressImage(file){
+  const bitmap = await createImageBitmap(file);
+  const maxSide = 1280;
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+  const w = Math.max(1, Math.round(bitmap.width * scale));
+  const h = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext("2d", { alpha:false });
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close();
+  return await new Promise((resolve, reject)=>canvas.toBlob(b=>b ? resolve(b) : reject(new Error("Не удалось сжать фото")), "image/jpeg", 0.75));
+}
+
+async function uploadPhoto(file, listingId){
+  const blob = await compressImage(file);
+  const path = `${authUser.id}/${listingId}.jpg`;
+  const { error } = await sb.storage.from(STORAGE_BUCKET).upload(path, blob, { contentType:"image/jpeg", upsert:false });
+  if(error) throw error;
+  const { data } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+  return { path, url:data.publicUrl };
+}
+
+async function deletePhoto(path){
+  if(!path) return;
+  const { error } = await sb.storage.from(STORAGE_BUCKET).remove([path]);
+  if(error) console.warn("Фото не удалилось из Storage:", error);
+}
+
+function normalizeListing(item){
+  return { ...item, desc:item.description || "", photo:item.photo_url || "", createdAt:item.created_at, category:item.category || "real" };
+}
+
+function renderProfile(){
+  const label=document.getElementById("nickLabel");
+  const letter=document.getElementById("avatarLetter");
+  if(nickname){ label.textContent=nickname; letter.textContent=nickname[0].toUpperCase(); }
+  else { label.textContent="Задать ник"; letter.textContent="?"; }
+}
+
+function renderListings(){
+  const grid=document.getElementById("grid");
+  const counts={
+    all:listings.length,
+    meme:listings.filter(x=>(x.category||"real")==="meme").length,
+    virtual:listings.filter(x=>(x.category||"real")==="virtual").length,
+    real:listings.filter(x=>(x.category||"real")==="real").length
+  };
+  document.getElementById("countAll").textContent=counts.all ? `(${counts.all})` : "";
+  document.getElementById("countMeme").textContent=counts.meme ? `(${counts.meme})` : "";
+  document.getElementById("countVirtual").textContent=counts.virtual ? `(${counts.virtual})` : "";
+  document.getElementById("countReal").textContent=counts.real ? `(${counts.real})` : "";
+
+  const visible=listings.filter(item=>activeCategory==="all" || (item.category||"real")===activeCategory);
+  if(visible.length===0){
+    const text=activeCategory==="all"
+      ? "Нажми «+», чтобы разместить первое объявление"
+      : "В этом разделе пока нет объявлений";
+    grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><b>Пока пусто</b>${text}</div>`;
+    return;
+  }
+  grid.innerHTML=visible.map(item=>{
+    const x=normalizeListing(item);
+    const category=x.category;
+    return `<div class="card" data-id="${x.id}">
+      ${x.photo ? `<img class="photo" src="${x.photo}" alt="">` : `<div class="photo-placeholder">📦</div>`}
+      <div class="body"><span class="category-badge">${CATEGORY_LABELS[category]||CATEGORY_LABELS.real}</span><h3>${escapeHtml(x.title)}</h3>
+      ${x.desc ? `<p class="desc">${escapeHtml(x.desc)}</p>` : ""}
+      <span class="want">⇄ ${escapeHtml(x.want)}</span>
+      <footer><span style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${escapeHtml(x.author)}${isModerator && String(x.user_id)!==String(authUser?.id) ? `<span class="moderator-badge">🛡️</span>` : ""}</span><span style="display:flex;align-items:center;gap:6px;">${authUser && String(x.user_id)===String(authUser.id) ? `<button class="del-btn" data-id="${x.id}">Удалить</button>` : ""}${isModerator ? `<button class="moderation-btn" data-id="${x.id}">Удалить</button>` : ""}</span></footer></div></div>`;
+  }).join("");
+  grid.querySelectorAll(".card").forEach(card=>card.addEventListener("click",()=>openDetail(card.dataset.id)));
+  grid.querySelectorAll(".del-btn").forEach(btn=>btn.addEventListener("click",async e=>{ e.stopPropagation(); await deleteOwnListing(btn.dataset.id); }));
+  grid.querySelectorAll(".moderation-btn").forEach(btn=>btn.addEventListener("click",async e=>{ e.stopPropagation(); openModeration(btn.dataset.id); }));
+}
+function escapeHtml(str){ const d=document.createElement("div"); d.textContent=str ?? ""; return d.innerHTML; }
+
+async function deleteOwnListing(id){
+  const item=listings.find(x=>String(x.id)===String(id));
+  if(!item || !authUser || String(item.user_id)!==String(authUser.id)) return;
+  if(!confirm("Удалить объявление?")) return;
+  const { error }=await sb.from("listings").delete().eq("id",id).eq("user_id",authUser.id);
+  if(error){ alert("Не удалось удалить объявление: "+error.message); return; }
+  await deletePhoto(item.photo_path);
+  listings=listings.filter(x=>String(x.id)!==String(id));
+  renderListings();
+}
+
+const moderationOverlay=document.getElementById("moderationOverlay");
+const moderationError=document.getElementById("moderationError");
+function openModeration(id){
+  if(!isModerator) return;
+  pendingModerationListingId=id;
+  moderationError.textContent="";
+  moderationOverlay.classList.add("open");
+}
+document.getElementById("moderationCancel").addEventListener("click",()=>{ pendingModerationListingId=null; moderationOverlay.classList.remove("open"); });
+document.querySelectorAll(".moderation-reason").forEach(btn=>btn.addEventListener("click",async()=>{
+  const listingId=pendingModerationListingId;
+  const reason=btn.dataset.reason;
+  const item=listings.find(x=>String(x.id)===String(listingId));
+  if(!listingId || !item || !isModerator) return;
+  moderationError.textContent="Удаляем…";
+  document.querySelectorAll(".moderation-reason").forEach(x=>x.disabled=true);
+  try{
+    const { data, error }=await sb.rpc("moderate_delete_listing",{p_listing_id:listingId,p_reason:reason});
+    if(error) throw error;
+    const photoPath=data?.photo_path || item.photo_path;
+    if(photoPath) await deletePhoto(photoPath);
+    listings=listings.filter(x=>String(x.id)!==String(listingId));
+    pendingModerationListingId=null;
+    moderationOverlay.classList.remove("open");
+    renderListings();
+  }catch(e){
+    moderationError.textContent=e.message||"Не удалось удалить объявление.";
+  }finally{
+    document.querySelectorAll(".moderation-reason").forEach(x=>x.disabled=false);
+  }
+}));
+
+document.querySelectorAll(".category-tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    activeCategory=tab.dataset.category;
+    document.querySelectorAll(".category-tab").forEach(x=>x.classList.toggle("active",x===tab));
+    renderListings();
+  });
+});
+
+const categoryInput=document.getElementById("categoryInput");
+const categoryLimitHint=document.getElementById("categoryLimitHint");
+function updateCategoryLimitHint(){
+  const cat=categoryInput.value;
+  const used=listings.filter(x=>String(x.user_id)===String(authUser?.id) && (x.category||"real")===cat).length;
+  const limit=CATEGORY_LIMITS[cat];
+  categoryLimitHint.textContent=`У тебя ${used} из ${limit} ${CATEGORY_NAMES[cat]} объявлений.`;
+}
+categoryInput.addEventListener("change",updateCategoryLimitHint);
+
+/* ---- Profile ---- */
+const profileOverlay=document.getElementById("profileOverlay");
+document.getElementById("profileChip").addEventListener("click",()=>{
+  if(!requireAuth("открыть профиль")) return;
+  document.getElementById("nickInput").value=nickname;
+  document.getElementById("profileEmailHint").textContent=authUser?.email ? "Аккаунт: " + authUser.email : "";
+  profileOverlay.classList.add("open");
+});
+document.getElementById("profileCancel").addEventListener("click",()=>profileOverlay.classList.remove("open"));
+document.getElementById("profileLogout").addEventListener("click",async()=>{
+  await sb.auth.signOut();
+  authUser=null;nickname="";isModerator=false;profileOverlay.classList.remove("open");
+  updateAuthUI();renderProfile();renderListings();
+});
+
+document.getElementById("profileSave").addEventListener("click",async()=>{
+  const val=document.getElementById("nickInput").value.trim();
+  if(!val){ alert("Введи никнейм"); return; }
+  if(val.length<2 || val.length>24){ alert("Никнейм должен быть от 2 до 24 символов"); return; }
+  try{ await saveProfile(val); renderProfile(); renderListings(); profileOverlay.classList.remove("open"); }
+  catch(e){ alert("Не удалось сохранить никнейм: "+e.message); }
+});
+
+/* ---- Add listing ---- */
+const addOverlay=document.getElementById("addOverlay");
+const photoInput=document.getElementById("photoInput");
+const photoDrop=document.getElementById("photoDrop");
+document.getElementById("fabAdd").addEventListener("click",()=>{
+  if(!requireAuth("опубликовать объявление")) return;
+  if(!nickname){ profileOverlay.classList.add("open"); return; }
+  pendingPhoto=null; photoInput.value=""; photoDrop.innerHTML='<span id="photoDropText">Нажми, чтобы выбрать фото</span>';
+  document.getElementById("titleInput").value=""; document.getElementById("descInput").value=""; document.getElementById("wantInput").value="";
+  categoryInput.value="real";
+  updateCategoryLimitHint();
+  addOverlay.classList.add("open");
+});
+document.getElementById("addCancel").addEventListener("click",()=>addOverlay.classList.remove("open"));
+photoDrop.addEventListener("click",()=>photoInput.click());
+photoInput.addEventListener("change",()=>{
+  const file=photoInput.files[0]; if(!file) return;
+  if(!file.type.startsWith("image/")){ alert("Выбери изображение"); photoInput.value=""; return; }
+  const reader=new FileReader(); reader.onload=()=>{ pendingPhoto=file; photoDrop.innerHTML=`<img src="${reader.result}" alt="">`; }; reader.readAsDataURL(file);
+});
+
+document.getElementById("addSave").addEventListener("click",async()=>{
+  const title=document.getElementById("titleInput").value.trim();
+  const desc=document.getElementById("descInput").value.trim();
+  const want=document.getElementById("wantInput").value.trim();
+  const category=categoryInput.value;
+  if(!title){ alert("Укажи название товара"); return; }
+  if(!want){ alert("Укажи, на что хочешь поменять"); return; }
+  const used=listings.filter(x=>String(x.user_id)===String(authUser.id) && (x.category||"real")===category).length;
+  if(used>=CATEGORY_LIMITS[category]){
+    alert(`Лимит раздела «${CATEGORY_NAMES[category]}»: ${CATEGORY_LIMITS[category]} на один аккаунт.`);
+    return;
+  }
+  const id=crypto.randomUUID();
+  let photoPath=null, photoUrl=null;
+  const btn=document.getElementById("addSave"); btn.disabled=true; btn.textContent="Сохраняем…";
+  try{
+    if(pendingPhoto){ const uploaded=await uploadPhoto(pendingPhoto,id); photoPath=uploaded.path; photoUrl=uploaded.url; }
+    const { data, error }=await sb.from("listings").insert({ id,user_id:authUser.id,title,description:desc,want,category,photo_url:photoUrl,photo_path:photoPath,author:nickname }).select().single();
+    if(error) throw error;
+    listings.unshift(data); renderListings(); addOverlay.classList.remove("open");
+  }catch(e){
+    if(photoPath) await deletePhoto(photoPath);
+    const msg=String(e?.message||"");
+    if(msg.includes("listing_category_limit")){
+      alert(`Лимит раздела «${CATEGORY_NAMES[category]}»: ${CATEGORY_LIMITS[category]}.`);
+    }else{
+      alert("Не удалось создать объявление: "+msg);
+    }
+  }finally{ btn.disabled=false; btn.textContent="Опубликовать"; }
+});
+
+/* ---- Detail ---- */
+const detailOverlay=document.getElementById("detailOverlay");
+function openDetail(id){
+  const raw=listings.find(x=>String(x.id)===String(id)); if(!raw) return;
+  const item=normalizeListing(raw); currentListingId=id;
+  document.getElementById("detailPhotoWrap").innerHTML=item.photo ? `<img class="detail-photo" src="${item.photo}" alt="">` : `<div class="detail-photo-placeholder">📦</div>`;
+  document.getElementById("detailTitle").textContent=item.title;
+  document.getElementById("detailCategory").textContent=CATEGORY_LABELS[item.category]||CATEGORY_LABELS.real;
+  document.getElementById("detailWant").textContent="⇄ "+item.want;
+  document.getElementById("detailDesc").textContent=item.desc || "Без описания.";
+  document.getElementById("detailAuthor").textContent=item.author;
+  document.getElementById("detailAvatar").textContent=(item.author||"?")[0].toUpperCase();
+
+  // Владелец своего объявления не может открыть чат с самим собой.
+  const isOwnListing = !!authUser && String(item.user_id) === String(authUser.id);
+  document.getElementById("detailChatBtn").style.display = isOwnListing ? "none" : "flex";
+
+  detailOverlay.classList.add("open");
+}
+document.getElementById("detailClose").addEventListener("click",()=>detailOverlay.classList.remove("open"));
+
+/* ---- Chats 2.0 ---- */
+const chatsOverlay=document.getElementById("chatsOverlay");
+const chatOverlay=document.getElementById("chatOverlay");
+const chatSearchInput=document.getElementById("chatSearchInput");
+const chatUnreadCount=document.getElementById("chatUnreadCount");
+let currentChatPartnerId=null;
+let currentChatOwnerId=null;
+let chatListCache=[];
+let chatReadMarks={};
+const CHAT_READ_KEY="exchange101_chat_read_v2";
+
+function loadChatReadMarks(){
+  try{ chatReadMarks=JSON.parse(localStorage.getItem(CHAT_READ_KEY)||"{}"); }
+  catch{ chatReadMarks={}; }
+}
+function saveChatReadMarks(){
+  try{ localStorage.setItem(CHAT_READ_KEY,JSON.stringify(chatReadMarks)); }catch{}
+}
+function chatKey(listingId,partnerId){ return String(listingId)+"::"+String(partnerId); }
+function markChatRead(listingId,partnerId,createdAt){
+  if(!listingId || !partnerId) return;
+  chatReadMarks[chatKey(listingId,partnerId)]=createdAt||new Date().toISOString();
+  saveChatReadMarks();
+}
+function isChatUnread(chat){
+  const mark=chatReadMarks[chatKey(chat.listing_id,chat.partnerId)];
+  return !mark || new Date(chat.created_at)>new Date(mark);
+}
+function formatChatTime(iso){
+  const d=new Date(iso), now=new Date();
+  if(d.toDateString()===now.toDateString()) return d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+  const y=new Date(now); y.setDate(now.getDate()-1);
+  if(d.toDateString()===y.toDateString()) return "вчера";
+  return d.toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"});
+}
+function formatMessageTime(iso){
+  return new Date(iso).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+}
+function formatChatDate(iso){
+  const d=new Date(iso), now=new Date();
+  if(d.toDateString()===now.toDateString()) return "Сегодня";
+  const y=new Date(now); y.setDate(now.getDate()-1);
+  if(d.toDateString()===y.toDateString()) return "Вчера";
+  return d.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:d.getFullYear()!==now.getFullYear()?"numeric":undefined});
+}
+function chatInitial(name){ return escapeHtml((String(name||"?").trim()[0]||"?").toUpperCase()); }
+function resizeChatInput(){
+  const el=document.getElementById("chatInput");
+  if(!el) return;
+  el.style.height="auto";
+  el.style.height=Math.min(el.scrollHeight,120)+"px";
+}
+function updateUnreadHeader(chats=chatListCache){
+  const count=chats.filter(isChatUnread).length;
+  chatUnreadCount.textContent=count>99?"99+":String(count);
+  chatUnreadCount.style.display=count?"inline-flex":"none";
+  const btn=document.getElementById("openChatsBtn");
+  if(btn && authUser) btn.textContent=count?`💬 Чаты · ${count}`:"💬 Чаты";
+}
+
+function buildChatObjects(data){
+  const grouped=new Map();
+  const meId=String(authUser.id);
+  for(const m of (data||[])){
+    const listing=listings.find(x=>String(x.id)===String(m.listing_id));
+    if(!listing) continue;
+    const senderId=String(m.user_id);
+    const recipientId=m.recipient_id ? String(m.recipient_id) : null;
+    if(!recipientId || (senderId!==meId && recipientId!==meId)) continue;
+    const partnerId=senderId===meId?recipientId:senderId;
+    if(!partnerId || partnerId===meId) continue;
+    const key=chatKey(m.listing_id,partnerId);
+    if(!grouped.has(key)){
+      const ownerId=String(listing.user_id);
+      grouped.set(key,{...m,listing,partnerId,ownerId,isOwnListing:ownerId===meId});
+    }
+  }
+  return [...grouped.values()].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+}
+
+function renderChatList(){
+  const box=document.getElementById("chatList");
+  const query=(chatSearchInput.value||"").trim().toLowerCase();
+  const filtered=chatListCache.filter(c=>{
+    const name=c.isOwnListing?c.author:(c.listing?.author||"Владелец");
+    return !query || [name,c.listing?.title,c.text].some(v=>String(v||"").toLowerCase().includes(query));
+  });
+  updateUnreadHeader(chatListCache);
+  if(!filtered.length){
+    box.innerHTML=`<div class="chat-list-empty"><div class="chat-list-empty-icon">💬</div><b>${query?"Ничего не найдено":"Здесь пока тихо"}</b><br>${query?"Попробуй другой запрос.":"Открой объявление и начни переписку — чат появится здесь."}</div>`;
+    return;
+  }
+  box.innerHTML=filtered.map(c=>{
+    const name=c.isOwnListing?c.author:(c.listing?.author||"Владелец");
+    const unread=isChatUnread(c);
+    return `<button class="chat-list-item ${unread?"unread":""}" data-listing-id="${escapeHtml(String(c.listing_id))}" data-user-id="${escapeHtml(String(c.partnerId))}">
+      <div class="chat-list-avatar">${chatInitial(name)}</div>
+      <div class="chat-list-main">
+        <div class="chat-list-line"><span class="chat-list-name">${escapeHtml(name)}</span></div>
+        <div class="chat-list-title">${escapeHtml(c.listing?.title||"Объявление")}</div>
+        <div class="chat-list-preview">${String(c.user_id)===String(authUser.id)?"Вы: ":""}${escapeHtml(c.text)}</div>
+      </div>
+      <div class="chat-list-meta"><span class="chat-list-time">${formatChatTime(c.created_at)}</span><span class="chat-unread-dot">●</span></div>
+    </button>`;
+  }).join("");
+  box.querySelectorAll(".chat-list-item").forEach(btn=>btn.addEventListener("click",()=>openChatFromList(btn.dataset.listingId,btn.dataset.userId)));
+}
+
+async function loadChatList(){
+  const box=document.getElementById("chatList");
+  if(!authUser) return;
+  box.innerHTML='<div class="chat-list-empty"><div class="chat-list-empty-icon">⏳</div>Загружаем чаты…</div>';
+  const listingIds=listings.map(x=>x.id);
+  if(!listingIds.length){ chatListCache=[]; renderChatList(); return; }
+  const {data,error}=await sb.from("messages")
+    .select("id,listing_id,user_id,recipient_id,author,text,created_at")
+    .in("listing_id",listingIds)
+    .order("created_at",{ascending:false});
+  if(error){
+    box.innerHTML='<div class="chat-list-empty"><div class="chat-list-empty-icon">⚠️</div>Не удалось загрузить чаты.</div>';
+    console.error(error); return;
+  }
+  chatListCache=buildChatObjects(data);
+  renderChatList();
+}
+
+async function openChatFromList(listingId,partnerId){
+  const item=listings.find(x=>String(x.id)===String(listingId));
+  if(!item || !authUser) return;
+  currentListingId=listingId;
+  currentChatPartnerId=String(partnerId);
+  currentChatOwnerId=String(item.user_id);
+  const chat=chatListCache.find(c=>String(c.listing_id)===String(listingId)&&String(c.partnerId)===String(partnerId));
+  const partnerName=String(item.user_id)===String(authUser.id)?(chat?.author||"Пользователь"):(item.author||"Владелец");
+  setChatHeader(partnerName,item);
+  chatsOverlay.classList.remove("open");
+  chatOverlay.classList.add("open");
+  const draftKey="exchange101_chat_draft_"+chatKey(listingId,partnerId);
+  document.getElementById("chatInput").value=localStorage.getItem(draftKey)||"";
+  resizeChatInput();
+  await renderChat(listingId,partnerId);
+}
+
+function setChatHeader(partnerName,item){
+  document.getElementById("chatHeader").textContent=partnerName;
+  document.getElementById("chatSubheader").textContent="Объявление · "+(item.title||"Без названия");
+  document.getElementById("chatAvatar").textContent=chatInitial(partnerName).replace(/&[^;]+;/g,"?");
+  document.getElementById("chatListingMiniTitle").textContent=item.title||"Объявление";
+  document.getElementById("chatListingMiniWant").textContent=item.want?"⇄ "+item.want:"";
+  const photo=item.photo_url||item.photo||"";
+  document.getElementById("chatListingMiniPhoto").innerHTML=photo?`<img class="chat-listing-mini-photo" src="${escapeHtml(photo)}" alt="">`:`<span class="chat-listing-mini-photo" style="display:flex;align-items:center;justify-content:center;font-size:16px;">📦</span>`;
+}
+
+async function renderChat(listingId,partnerId=null){
+  const item=listings.find(x=>String(x.id)===String(listingId));
+  if(!item || !authUser) return;
+  const meId=String(authUser.id);
+  const otherId=String(partnerId||item.user_id);
+  if(otherId===meId){
+    document.getElementById("chatMessages").innerHTML='<div class="chat-empty"><span class="chat-empty-icon">🙈</span>Нельзя открыть чат со своим объявлением.</div>';
+    return;
+  }
+  currentListingId=listingId; currentChatPartnerId=otherId; currentChatOwnerId=String(item.user_id);
+  const {data,error}=await sb.from("messages")
+    .select("id,user_id,recipient_id,author,text,created_at")
+    .eq("listing_id",listingId)
+    .order("created_at",{ascending:true});
+  const box=document.getElementById("chatMessages");
+  if(error){box.innerHTML='<div class="chat-empty"><span class="chat-empty-icon">⚠️</span>Не удалось загрузить сообщения.</div>';console.error(error);return;}
+  const msgs=(data||[]).filter(m=>{
+    const uid=String(m.user_id), rid=m.recipient_id?String(m.recipient_id):"";
+    return (uid===meId&&rid===otherId)||(uid===otherId&&rid===meId);
+  });
+  if(!msgs.length){
+    box.innerHTML='<div class="chat-empty"><span class="chat-empty-icon">👋</span><b>Начни разговор</b><br>Спроси про состояние, обмен или договоритесь о встрече.</div>';
+    markChatRead(listingId,otherId,new Date().toISOString());
+    return;
+  }
+  let html="", lastDate="", lastSender="";
+  for(const m of msgs){
+    const dateKey=new Date(m.created_at).toDateString();
+    if(dateKey!==lastDate){ html+=`<div class="chat-date-separator">${formatChatDate(m.created_at)}</div>`; lastDate=dateKey; lastSender=""; }
+    const mine=String(m.user_id)===meId;
+    html+=`<div class="msg-row ${mine?"me":"them"}"><div class="msg ${mine?"me":"them"}"><span class="msg-text">${escapeHtml(m.text)}</span><span class="msg-time">${formatMessageTime(m.created_at)}</span></div></div>`;
+    lastSender=m.user_id;
+  }
+  box.innerHTML=html;
+  requestAnimationFrame(()=>box.scrollTop=box.scrollHeight);
+  const last=msgs[msgs.length-1];
+  markChatRead(listingId,otherId,last.created_at);
+  updateUnreadHeader();
+  resizeChatInput();
+}
+
+document.getElementById("detailChatBtn").addEventListener("click",async()=>{
+  if(!requireAuth("написать пользователю")) return;
+  const raw=listings.find(x=>String(x.id)===String(currentListingId));
+  if(!raw) return;
+  const item=normalizeListing(raw);
+  if(String(item.user_id)===String(authUser.id)) return;
+  currentChatOwnerId=String(item.user_id); currentChatPartnerId=String(item.user_id);
+  setChatHeader(item.author,item);
+  detailOverlay.classList.remove("open");
+  await renderChat(item.id,item.user_id);
+  chatOverlay.classList.add("open");
+  const draftKey="exchange101_chat_draft_"+chatKey(item.id,item.user_id);
+  document.getElementById("chatInput").value=localStorage.getItem(draftKey)||"";
+  resizeChatInput();
+  document.getElementById("chatInput").focus();
+});
+
+document.getElementById("openChatsBtn").addEventListener("click",async()=>{
+  if(!requireAuth("открыть чаты")) return;
+  chatsOverlay.classList.add("open");
+  chatSearchInput.value="";
+  await loadChatList();
+});
+document.getElementById("chatsClose").addEventListener("click",()=>chatsOverlay.classList.remove("open"));
+document.getElementById("chatClose").addEventListener("click",()=>{
+  chatOverlay.classList.remove("open");
+  if(currentListingId) detailOverlay.classList.add("open");
+});
+document.getElementById("chatListingMini").addEventListener("click",()=>{
+  if(currentListingId){ chatOverlay.classList.remove("open"); openDetail(currentListingId); }
+});
+chatSearchInput.addEventListener("input",renderChatList);
+const chatInput=document.getElementById("chatInput");
+chatInput.addEventListener("input",()=>{resizeChatInput(); localStorage.setItem("exchange101_chat_draft_"+chatKey(currentListingId||"",currentChatPartnerId||""),chatInput.value);});
+chatInput.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChatMsg();}
+});
+document.getElementById("chatSend").addEventListener("click",sendChatMsg);
+
+async function sendChatMsg(){
+  if(!authUser) return;
+  const input=document.getElementById("chatInput");
+  const text=input.value.trim();
+  if(!text || !currentListingId || !currentChatPartnerId) return;
+  const meId=String(authUser.id), partnerId=String(currentChatPartnerId);
+  if(meId===partnerId){alert("Нельзя отправить сообщение самому себе.");return;}
+  const btn=document.getElementById("chatSend");
+  btn.disabled=true;
+  const {error}=await sb.from("messages").insert({listing_id:currentListingId,user_id:authUser.id,recipient_id:partnerId,author:nickname||"Пользователь",text});
+  btn.disabled=false;
+  if(error){alert("Не удалось отправить сообщение: "+error.message);return;}
+  input.value="";
+  localStorage.removeItem("exchange101_chat_draft_"+chatKey(currentListingId,currentChatPartnerId));
+  resizeChatInput();
+  await renderChat(currentListingId,currentChatPartnerId);
+}
+
+let listingsChannel,messagesChannel;
+function subscribeRealtime(){
+  listingsChannel=sb.channel("public-listings")
+    .on("postgres_changes",{event:"*",schema:"public",table:"listings"},async()=>{
+      await loadListings(); renderListings();
+      if(chatsOverlay.classList.contains("open")) await loadChatList();
+      if(chatOverlay.classList.contains("open")&&currentListingId){
+        const item=listings.find(x=>String(x.id)===String(currentListingId));
+        if(item) await renderChat(currentListingId,currentChatPartnerId);
+      }
+    }).subscribe();
+  messagesChannel=sb.channel("listing-messages")
+    .on("postgres_changes",{event:"*",schema:"public",table:"messages"},async payload=>{
+      const changedId=payload.new?.listing_id||payload.old?.listing_id;
+      if(chatOverlay.classList.contains("open")&&currentListingId&&String(changedId)===String(currentListingId)){
+        await renderChat(currentListingId,currentChatPartnerId);
+      }
+      if(chatsOverlay.classList.contains("open")) await loadChatList();
+      else if(authUser) await refreshChatUnreadSilently();
+    }).subscribe();
+}
+async function refreshChatUnreadSilently(){
+  const listingIds=listings.map(x=>x.id);
+  if(!listingIds.length){updateUnreadHeader([]);return;}
+  const {data}=await sb.from("messages").select("id,listing_id,user_id,recipient_id,author,text,created_at").in("listing_id",listingIds).order("created_at",{ascending:false});
+  if(data){chatListCache=buildChatObjects(data);updateUnreadHeader(chatListCache);}
+}
+
+loadChatReadMarks();
+
+async function init(){
+  try{
+    await restoreSession();
+    await loadModeratorStatus();
+    await loadListings();
+    if(authUser) await loadProfile();
+    updateAuthUI();
+    renderProfile();
+    renderListings();
+    subscribeRealtime();
+  }catch(e){
+    console.error(e);
+    document.getElementById("grid").innerHTML='<div class="empty" style="grid-column:1/-1"><b>Не удалось загрузить объявления</b>'+escapeHtml(e.message||"Ошибка Supabase")+'</div>';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
