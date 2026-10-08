@@ -1,0 +1,3365 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Обмен 101 — тёмная доска обмена</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=PT+Sans:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#070a0f;
+  --bg-soft:#0b1017;
+  --surface:#101720;
+  --surface-2:#141d27;
+  --surface-3:#19232e;
+  --line:rgba(255,255,255,.09);
+  --line-strong:rgba(255,255,255,.14);
+  --text:#f4f7fb;
+  --muted:#8e9aaa;
+  --muted-2:#657181;
+  --accent:#64e39a;
+  --accent-2:#35c979;
+  --accent-soft:rgba(100,227,154,.12);
+  --danger:#ff6b7a;
+  --margin:#ff6b7a;
+  --mustard:#f2b84b;
+  --shadow:0 24px 70px rgba(0,0,0,.34);
+  --radius:16px;
+}
+*,*::before,*::after{box-sizing:border-box;}
+html{scroll-padding-top:env(safe-area-inset-top,0px);background:var(--bg);}
+html,body{height:100%;margin:0;}
+body{
+  min-height:100vh;
+  background:
+    radial-gradient(900px 500px at 85% -10%, rgba(71,184,126,.11), transparent 60%),
+    radial-gradient(700px 500px at -10% 30%, rgba(38,103,255,.08), transparent 60%),
+    var(--bg);
+  color:var(--text);
+  font-family:'PT Sans',ui-sans-serif,system-ui,-apple-system,sans-serif;
+  letter-spacing:-.01em;
+  -webkit-font-smoothing:antialiased;
+}
+body::before{display:none!important;}
+
+/* ===== Smooth UI + kill mobile blue flash ===== */
+html{scroll-behavior:smooth;}
+*,*::before,*::after{
+  -webkit-tap-highlight-color:transparent !important;
+  -webkit-touch-callout:none;
+}
+button,a,.card,.profile-chip,.category-tab,.chat-list-item,.author-link,.author-listing-card,
+.moderation-reason,.ban-type,.ban-duration,.admin-user-action,.toolbar-add,.fab,.header-chat-btn{
+  -webkit-tap-highlight-color:transparent !important;
+  outline:none !important;
+  -webkit-user-select:none;
+  user-select:none;
+  touch-action:manipulation;
+}
+button:focus,button:focus-visible,a:focus,a:focus-visible{
+  outline:none !important;
+  box-shadow:none;
+}
+button:focus-visible{
+  box-shadow:0 0 0 3px rgba(100,227,154,.28) !important;
+}
+/* Prevent native blue/gray flash on press */
+button,button:active,button:focus,button:hover{
+  -webkit-appearance:none;
+  appearance:none;
+}
+input,textarea,select{
+  -webkit-tap-highlight-color:transparent !important;
+}
+
+/* Smooth transitions for interactive elements */
+button,.profile-chip,.category-tab,.header-chat-btn,.toolbar-add,.fab,
+.card,.author-listing-card,.chat-list-item,.want,.moderation-reason,
+.ban-type,.ban-duration,.admin-user-action,.google-auth-btn,.photo-drop{
+  transition:
+    transform .18s cubic-bezier(.2,.8,.2,1),
+    background .18s ease,
+    background-color .18s ease,
+    border-color .18s ease,
+    box-shadow .2s ease,
+    opacity .18s ease,
+    color .15s ease,
+    filter .18s ease !important;
+}
+
+/* Overlay fade + sheet slide */
+.overlay{
+  transition:opacity .22s ease, backdrop-filter .22s ease !important;
+  opacity:0;
+  pointer-events:none;
+}
+.overlay.open{
+  opacity:1 !important;
+  pointer-events:auto !important;
+  animation:overlayIn .22s ease both;
+}
+@keyframes overlayIn{
+  from{opacity:0;}
+  to{opacity:1;}
+}
+.overlay .sheet{
+  transform:translateY(18px);
+  opacity:0;
+  transition:transform .28s cubic-bezier(.2,.8,.2,1), opacity .22s ease !important;
+}
+.overlay.open .sheet{
+  transform:translateY(0);
+  opacity:1;
+  animation:sheetUp .32s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes sheetUp{
+  from{transform:translateY(28px); opacity:.6;}
+  to{transform:translateY(0); opacity:1;}
+}
+
+/* Cards */
+.card,.author-listing-card{
+  transition:transform .22s cubic-bezier(.2,.8,.2,1), box-shadow .22s ease, border-color .2s ease !important;
+}
+.card:active,.author-listing-card:active{
+  transform:scale(.98) translateY(0) !important;
+}
+
+/* Soft press feedback instead of browser blue */
+button:active:not(:disabled),
+.profile-chip:active,
+.category-tab:active,
+.header-chat-btn:active,
+.toolbar-add:active,
+.fab:active,
+.chat-list-item:active,
+.google-auth-btn:active{
+  transform:scale(.97) !important;
+  filter:brightness(1.05);
+}
+
+/* Keep primary/green look while pressed — no system blue */
+button.primary:active,
+.toolbar-add:active,
+.fab:active,
+.chat-send:active{
+  background:linear-gradient(135deg,#76eda9,#43d989) !important;
+  color:#06120b !important;
+  -webkit-text-fill-color:#06120b !important;
+}
+button.ghost:active{
+  background:#18232e !important;
+  color:#e9f1f5 !important;
+}
+.category-tab.active:active{
+  background:var(--accent) !important;
+  color:#06120b !important;
+}
+
+/* Chat messages appear softly */
+.msg-row{
+  animation:msgIn .18s ease both;
+}
+@keyframes msgIn{
+  from{opacity:0; transform:translateY(6px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+/* Grid items stagger-ish feel on load */
+.grid .card{
+  animation:cardIn .35s cubic-bezier(.2,.8,.2,1) both;
+}
+@keyframes cardIn{
+  from{opacity:0; transform:translateY(12px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+/* Header glass already present — smooth chip hover */
+.profile-chip:active .avatar{transform:scale(.96);}
+.avatar{transition:transform .15s ease;}
+
+/* Reduce motion for accessibility */
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{
+    animation-duration:.01ms !important;
+    animation-iteration-count:1 !important;
+    transition-duration:.01ms !important;
+    scroll-behavior:auto !important;
+  }
+}
+
+
+/* ===== Header ===== */
+.site-header, header.site-header, header{
+  position:sticky; top:0; z-index:20;
+  width:100%; min-height:72px;
+  padding:12px max(22px, calc((100vw - 1160px)/2));
+  display:flex; align-items:center; justify-content:space-between; gap:20px;
+  background:rgba(7,10,15,.82);
+  border-bottom:1px solid var(--line);
+  box-shadow:0 10px 40px rgba(0,0,0,.18);
+  backdrop-filter:blur(22px) saturate(140%);
+  -webkit-backdrop-filter:blur(22px) saturate(140%);
+}
+.brand{display:flex; align-items:center; gap:11px; flex-direction:row; line-height:1.1;}
+.brand-mark, .modern-exchange-logo{
+  position:relative; width:42px; height:42px; border-radius:13px;
+  display:grid; place-items:center; overflow:hidden;
+  background:radial-gradient(circle at 30% 20%,rgba(105,244,166,.22),transparent 42%), linear-gradient(145deg,#1d7558,#0d4737);
+  border:1px solid rgba(120,240,181,.25);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.10), 0 10px 30px rgba(35,210,139,.16);
+  color:#fff; font-size:24px; font-weight:700;
+}
+.modern-exchange-logo::after{content:""; position:absolute; inset:7px; border:1px solid rgba(157,255,204,.13); border-radius:13px;}
+.logo-arrow{position:absolute; width:23px; height:9px; border-radius:999px; background:#eafff4; box-shadow:0 0 12px rgba(119,255,191,.24);}
+.logo-arrow::after{content:""; position:absolute; top:50%; width:9px; height:9px; border-top:3px solid #eafff4; border-right:3px solid #eafff4; transform:translateY(-50%) rotate(45deg);}
+.logo-arrow-a{transform:translate(-2px,-6px);}
+.logo-arrow-a::after{right:-2px;}
+.logo-arrow-b{transform:translate(2px,6px) rotate(180deg);}
+.logo-arrow-b::after{right:-2px;}
+.brand-copy{display:flex; flex-direction:column; gap:3px;}
+.brand b{font-size:17px; font-weight:800; letter-spacing:-.02em; color:var(--text);}
+.brand span{font-size:11px; color:var(--muted);}
+.online-now{display:flex; align-items:center; gap:7px; margin-top:5px; color:#7f8d9b; font-size:12px;}
+.online-now b{color:#dfeee6; font-weight:800;}
+.online-dot{width:7px; height:7px; border-radius:50%; background:#64e39a; box-shadow:0 0 0 3px rgba(100,227,154,.10),0 0 12px rgba(100,227,154,.55); animation:onlinePulse 1.8s ease-in-out infinite;}
+@keyframes onlinePulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.55;transform:scale(.82)}}
+
+.header-actions{display:flex; align-items:center; gap:9px;}
+.header-chat-btn{
+  min-height:42px; min-width:104px;
+  display:inline-flex; align-items:center; justify-content:center; gap:8px;
+  border:1px solid var(--line-strong); background:#111922; color:#edf3f7;
+  border-radius:12px; padding:0 13px; font:700 13px 'PT Sans',sans-serif; cursor:pointer; transition:.18s ease;
+}
+.header-chat-btn:hover{background:#17232e; color:#fff; transform:translateY(-1px);}
+.header-chat-icon{width:20px; height:16px; display:inline-block; position:relative; flex:0 0 20px; border:2px solid currentColor; border-radius:6px; box-sizing:border-box;}
+.header-chat-icon::after{content:""; position:absolute; left:3px; bottom:-5px; width:6px; height:6px; border-left:2px solid currentColor; transform:skewY(-35deg);}
+.admin-header-btn{display:none!important; background:#111a23!important; border-color:rgba(111,238,169,.28)!important; color:#eaf8f0!important;}
+.admin-header-btn.is-visible{display:flex!important;}
+.admin-shield-icon{font-size:13px; color:#71e8a4; line-height:1;}
+
+.profile-chip{
+  min-height:42px; display:flex; align-items:center; gap:8px;
+  background:rgba(255,255,255,.045); border:1px solid var(--line); border-radius:12px;
+  padding:5px 10px 5px 5px; cursor:pointer; font-size:13px; font-weight:700; color:var(--text); transition:.18s ease;
+}
+.profile-chip:hover{background:rgba(255,255,255,.07); border-color:var(--line-strong);}
+.avatar, .profile-avatar, .detail-avatar, .chat-list-avatar, .chat-person-avatar, .admin-user-avatar{
+  background:linear-gradient(135deg,#1f6d48,#163a2a); border:1px solid rgba(100,227,154,.25);
+  color:#71e8a4; display:flex; align-items:center; justify-content:center; font-weight:800;
+}
+.avatar{width:31px; height:31px; border-radius:9px; font-size:12px;}
+.profile-chevron{font-size:15px; color:var(--muted); margin-left:2px;}
+
+/* ===== Main ===== */
+main{position:relative; z-index:1; width:min(1120px, calc(100% - 40px)); padding:38px 0 110px; margin:0 auto; max-width:none;}
+
+.hero{
+  position:relative; overflow:hidden; min-height:285px;
+  display:flex; align-items:center; justify-content:space-between; gap:30px;
+  padding:42px 48px; border-radius:28px; color:#fff;
+  background:linear-gradient(135deg,rgba(20,31,39,.96),rgba(10,15,21,.96));
+  border:1px solid var(--line); box-shadow:var(--shadow);
+}
+.hero::before{content:""; position:absolute; width:360px; height:360px; right:-120px; top:-180px; border-radius:50%; background:radial-gradient(circle,rgba(100,227,154,.16),transparent 68%); pointer-events:none;}
+.hero::after{content:""; position:absolute; inset:auto -80px -140px auto; width:420px; height:300px; border-radius:50%; border:1px solid rgba(255,255,255,.13); box-shadow:0 0 0 28px rgba(255,255,255,.025),0 0 0 56px rgba(255,255,255,.02); pointer-events:none;}
+.hero-copy{position:relative; z-index:2; max-width:650px;}
+.eyebrow{display:inline-flex; align-items:center; gap:7px; padding:6px 10px; border:1px solid rgba(255,255,255,.17); border-radius:999px; background:rgba(255,255,255,.09); font-size:11px; font-weight:700; letter-spacing:.04em; text-transform:uppercase;}
+.eyebrow-dot{width:6px; height:6px; border-radius:50%; background:#f6c45b; box-shadow:0 0 0 4px rgba(246,196,91,.12);}
+h1.page-title{margin:17px 0 13px; font-size:clamp(38px,5vw,58px); line-height:.98; letter-spacing:-.055em; color:#fff; font-weight:800;}
+h1.page-title::after{display:none;}
+h1.page-title span{color:#d5f0df;}
+.hero-text{margin:0; max-width:590px; color:#a8b3c1; font-size:15px; line-height:1.55;}
+.hero-art{position:relative; width:230px; height:205px; flex:none;}
+.hero-orbit{position:absolute; border:1px solid rgba(255,255,255,.13); border-radius:50%;}
+.orbit-one{width:220px; height:150px; right:-30px; top:24px; transform:rotate(-20deg);}
+.orbit-two{width:170px; height:110px; right:0; top:45px; transform:rotate(24deg);}
+.hero-card{position:absolute; width:88px; height:108px; border-radius:19px; display:grid; place-items:center; font-size:40px; border:1px solid rgba(255,255,255,.24); background:rgba(255,255,255,.13); box-shadow:0 18px 30px rgba(0,0,0,.13); backdrop-filter:blur(8px);}
+.hero-card-back{right:25px; top:10px; transform:rotate(11deg);}
+.hero-card-front{right:105px; top:70px; transform:rotate(-10deg); background:rgba(255,255,255,.2);}
+
+.market-toolbar{display:flex; align-items:end; justify-content:space-between; gap:20px; margin:48px 0 16px;}
+.section-kicker{color:var(--accent); font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; margin-bottom:5px;}
+.market-toolbar h2, .section-title, h2, h3{margin:0; color:var(--text); font-weight:800;}
+.market-toolbar h2{font-size:25px; line-height:1.1; letter-spacing:-.035em;}
+.toolbar-add{
+  display:inline-flex; align-items:center; gap:7px; border:0;
+  background:linear-gradient(135deg,#76eda9,#43d989); color:#06120b;
+  padding:11px 15px; border-radius:12px; font:800 13px 'PT Sans',sans-serif;
+  cursor:pointer; box-shadow:0 8px 18px rgba(67,217,137,.18); transition:.18s ease;
+}
+.toolbar-add span{font-size:18px; line-height:0;}
+.toolbar-add:hover{filter:brightness(1.05); transform:translateY(-1px);}
+
+.category-tabs{
+  position:relative;
+  display:flex; gap:4px; flex-wrap:nowrap;
+  margin:0 0 22px; padding:5px;
+  width:max-content; max-width:100%;
+  background:rgba(9,13,18,.8);
+  border:1px solid var(--line);
+  border-radius:16px;
+  box-shadow:0 12px 35px rgba(0,0,0,.16);
+  overflow-x:auto; overflow-y:hidden;
+  scrollbar-width:none;
+  -webkit-overflow-scrolling:touch;
+}
+.category-tabs::-webkit-scrollbar{display:none;}
+.category-tabs-pill{
+  position:absolute;
+  top:5px; left:0;
+  height:calc(100% - 10px);
+  border-radius:999px;
+  background:
+    radial-gradient(120% 140% at 30% 20%, rgba(255,255,255,.28), transparent 42%),
+    linear-gradient(135deg,#7ef0b0 0%, #3ad887 55%, #2fbf74 100%);
+  box-shadow:
+    0 10px 28px rgba(100,227,154,.32),
+    0 2px 8px rgba(0,0,0,.22),
+    inset 0 1px 0 rgba(255,255,255,.35);
+  pointer-events:none;
+  z-index:0;
+  will-change:transform,width,border-radius,filter;
+  filter:saturate(1.05);
+}
+.category-tabs-pill.is-flowing{
+  border-radius:22px;
+  filter:saturate(1.12) brightness(1.04);
+}
+.category-tabs-pill.is-settling{
+  transition:
+    transform .55s cubic-bezier(.18,1.15,.28,1),
+    width .55s cubic-bezier(.18,1.15,.28,1),
+    border-radius .45s ease,
+    filter .35s ease;
+}
+.category-tab{
+  position:relative; z-index:1;
+  border:0; background:transparent !important;
+  color:#9aa6b5; padding:10px 14px; border-radius:12px;
+  font:700 13px 'PT Sans',sans-serif; cursor:pointer;
+  transition:color .25s ease;
+  white-space:nowrap; flex:none;
+  box-shadow:none !important;
+}
+.category-tab:hover{color:#eaf0f5; background:transparent !important;}
+.category-tab.active{
+  color:#06120b !important;
+  background:transparent !important;
+  border-color:transparent !important;
+  box-shadow:none !important;
+}
+.category-tab .count{opacity:.75; font-weight:700; margin-left:3px;}
+#categoryTabs .category-tab[data-category="all"]{order:1}
+#categoryTabs .category-tab[data-category="real"]{order:2}
+#categoryTabs .category-tab[data-category="virtual"]{order:3}
+#categoryTabs .category-tab[data-category="meme"]{order:4}
+
+.grid{display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px;}
+.card, .listing-card, .item-card{
+  background:linear-gradient(180deg,#111a23,#0d141c); border:1px solid var(--line); border-radius:18px;
+  overflow:hidden; display:flex; flex-direction:column; position:relative;
+  box-shadow:0 16px 45px rgba(0,0,0,.22); color:var(--text); cursor:pointer;
+  transition:transform .2s ease, box-shadow .2s ease, border-color .2s ease;
+}
+.card:hover{transform:translateY(-4px); border-color:rgba(100,227,154,.24); box-shadow:0 24px 60px rgba(0,0,0,.34),0 0 0 1px rgba(100,227,154,.05);}
+.card .photo, .photo-placeholder{width:100%; aspect-ratio:1.12; object-fit:cover; background:#0a1218;}
+.photo-placeholder{display:flex; align-items:center; justify-content:center; font-size:38px; color:#62717e;}
+.card .body{padding:13px 14px 14px; display:flex; flex-direction:column; gap:7px; flex:1;}
+.category-badge, .badge, .tag{
+  display:inline-flex; align-items:center; align-self:flex-start; width:max-content; max-width:100%;
+  font-size:10px; font-weight:800; letter-spacing:.02em; padding:5px 8px; border-radius:7px;
+  background:rgba(100,227,154,.10); border:1px solid rgba(100,227,154,.16); color:#82ecae;
+}
+.card h3{margin:1px 0 0; font-size:16px; line-height:1.2; font-weight:800; letter-spacing:-.02em; color:#f6f8fb;}
+.card p.desc{margin:0; font-size:12px; line-height:1.45; color:#8996a6; flex:1; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;}
+.want{
+  display:inline-flex; align-items:center; gap:6px; font-size:11px; font-weight:800;
+  background:rgba(255,194,75,.08); color:#ffd878; border:1px solid rgba(255,194,75,.2);
+  padding:6px 9px; border-radius:8px; align-self:flex-start; max-width:100%;
+}
+.card footer{display:flex; align-items:center; justify-content:space-between; gap:8px; font-size:11px; color:var(--muted); margin-top:3px;}
+.del-btn{background:none; border:none; color:var(--danger); cursor:pointer; font-size:11px; padding:0; font-weight:700;}
+.moderation-btn{border:1px solid rgba(194,74,62,.35); background:rgba(194,74,62,.08); color:#ff8a95; border-radius:8px; padding:5px 8px; font-size:11px; font-weight:700; cursor:pointer;}
+.moderation-btn:hover{background:rgba(194,74,62,.14);}
+.moderator-badge{display:inline-flex; align-items:center; gap:5px; font-size:10px; padding:3px 7px; border-radius:999px; background:rgba(100,227,154,.12); color:var(--accent); border:1px solid rgba(100,227,154,.25); font-weight:700;}
+.author-link{cursor:pointer;}
+.author-link:hover{color:#73e8a5!important;}
+
+.empty, .empty-state{
+  text-align:center; padding:74px 24px; color:var(--muted);
+  background:linear-gradient(180deg,#111a22,#0c141b); border:1px solid rgba(255,255,255,.08); border-radius:22px;
+  box-shadow:0 18px 50px rgba(0,0,0,.18);
+}
+.empty b{display:block; font-size:20px; font-weight:800; color:#f1f6f9; margin-bottom:6px;}
+.empty span{color:#8d9aa8;}
+
+.market-loading{
+  min-height:280px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:12px;
+  color:#91a0ae; background:linear-gradient(180deg,#101820,#0b131a); border:1px solid rgba(255,255,255,.07); border-radius:22px;
+}
+.market-loading::before{content:""; width:26px; height:26px; border:2px solid rgba(100,227,154,.18); border-top-color:#64e39a; border-radius:50%; animation:marketSpin .8s linear infinite;}
+@keyframes marketSpin{to{transform:rotate(360deg)}}
+
+.fab{
+  position:fixed; right:24px; bottom:calc(24px + env(safe-area-inset-bottom,0px));
+  width:58px; height:58px; border-radius:18px; border:none; cursor:pointer; z-index:6;
+  background:linear-gradient(135deg,#76eda9,#43d989); color:#06120b; font-size:27px; line-height:0;
+  box-shadow:0 18px 40px rgba(67,217,137,.25); transition:.18s ease;
+}
+.fab:hover{filter:brightness(1.05); transform:translateY(-2px);}
+.fab:active{transform:scale(.96);}
+
+/* ===== Overlays / sheets ===== */
+.overlay{
+  position:fixed; inset:0; z-index:10; display:none; align-items:flex-end; justify-content:center;
+  padding-top:env(safe-area-inset-top,0px); background:rgba(2,5,8,.78);
+  backdrop-filter:blur(12px); -webkit-backdrop-filter:blur(12px); color:#edf4f7;
+}
+.overlay.open{display:flex;}
+.sheet{
+  background:linear-gradient(180deg,#121b25,#0d141c); color:var(--text);
+  width:100%; max-width:560px; border-radius:24px 24px 0 0; padding:24px;
+  max-height:90vh; overflow-y:auto; border:1px solid var(--line-strong);
+  box-shadow:0 35px 100px rgba(0,0,0,.55);
+}
+.sheet h2{margin:0 0 16px; font-size:24px; font-weight:800; letter-spacing:-.035em; color:#fff;}
+label{display:block; font-size:12px; font-weight:700; color:#aab5c3; margin:15px 0 7px;}
+input[type=text], input[type=email], input[type=password], input[type=search], input[type=datetime-local], textarea, select{
+  width:100%; padding:12px 13px; border:1px solid var(--line-strong); border-radius:11px;
+  background:#0b1118; color:#edf3f8; font:14px 'PT Sans',sans-serif; outline:none;
+  transition:border-color .16s ease, box-shadow .16s ease;
+  -webkit-text-fill-color:#edf3f8;
+}
+input::placeholder, textarea::placeholder{color:#647281; -webkit-text-fill-color:#647281;}
+input:focus, textarea:focus, select:focus{border-color:rgba(100,227,154,.5); box-shadow:0 0 0 3px rgba(100,227,154,.09);}
+textarea{min-height:90px; resize:vertical;}
+.photo-drop{
+  border:1.5px dashed rgba(255,255,255,.18); border-radius:13px; padding:24px; text-align:center;
+  color:#a4b1bb; background:#111a23; cursor:pointer; transition:.18s ease;
+}
+.photo-drop:hover{border-color:var(--accent); background:#16212b;}
+.photo-drop img{max-width:100%; max-height:160px; border-radius:8px; display:block; margin:0 auto;}
+input[type=file]{display:none;}
+.sheet-actions{display:flex; gap:9px; margin-top:20px;}
+button.primary, .btn-primary, #toolbarAdd, button[type="submit"]{
+  flex:1; background:linear-gradient(135deg,#76eda9,#43d989); color:#06120b; border:none;
+  padding:12px 15px; border-radius:11px; font:800 14px 'PT Sans',sans-serif; cursor:pointer;
+  box-shadow:0 7px 16px rgba(67,217,137,.14);
+  -webkit-tap-highlight-color:transparent !important;
+  touch-action:manipulation;
+}
+button.primary:hover{filter:brightness(1.05);}
+button.ghost, .btn-secondary{
+  background:#111a23; border:1px solid rgba(255,255,255,.12); color:#e9f1f5;
+  padding:11px 15px; border-radius:11px; cursor:pointer; font:700 13px 'PT Sans',sans-serif;
+}
+button.ghost:hover{background:#18232e;}
+.hint{font-size:11px; color:#91a0ab; margin-top:5px;}
+
+/* Google auth button — polished */
+.google-auth-btn,
+#googleAuthBtn,
+#authOverlay .google-auth-btn,
+#authOverlay #googleAuthBtn,
+#authOverlay .auth-body .google-auth-btn{
+  width:100% !important;
+  display:flex !important;
+  visibility:visible !important;
+  opacity:1 !important;
+  align-items:center !important;
+  justify-content:center !important;
+  gap:12px !important;
+  min-height:50px !important;
+  margin:4px 0 0 !important;
+  padding:0 16px !important;
+  border:1px solid rgba(255,255,255,.14) !important;
+  border-radius:14px !important;
+  background:linear-gradient(180deg,#1a2430 0%, #121a22 100%) !important;
+  background-image:linear-gradient(180deg,#1a2430 0%, #121a22 100%) !important;
+  color:#edf3f7 !important;
+  -webkit-text-fill-color:#edf3f7 !important;
+  font:800 14px/1.2 'PT Sans',sans-serif !important;
+  cursor:pointer !important;
+  box-shadow:0 8px 22px rgba(0,0,0,.28), inset 0 1px 0 rgba(255,255,255,.06) !important;
+  transition:transform .16s ease, box-shadow .16s ease, border-color .16s ease, background .16s ease !important;
+}
+.google-auth-btn *,
+#googleAuthBtn *,
+#authOverlay .google-auth-btn *,
+#authOverlay #googleAuthBtn *{
+  color:#edf3f7 !important;
+  -webkit-text-fill-color:#edf3f7 !important;
+}
+.google-auth-btn span,
+.google-auth-btn .google-auth-label,
+#googleAuthBtn span,
+#googleAuthBtn .google-auth-label{
+  color:#edf3f7 !important;
+  -webkit-text-fill-color:#edf3f7 !important;
+  font-weight:800 !important;
+  opacity:1 !important;
+}
+.google-auth-btn:hover,
+#googleAuthBtn:hover{
+  background:linear-gradient(180deg,#222e3b 0%, #17212b 100%) !important;
+  background-image:linear-gradient(180deg,#222e3b 0%, #17212b 100%) !important;
+  border-color:rgba(100,227,154,.35) !important;
+  transform:translateY(-1px);
+  box-shadow:0 12px 28px rgba(0,0,0,.32), 0 0 0 1px rgba(100,227,154,.10) !important;
+  color:#ffffff !important;
+  -webkit-text-fill-color:#ffffff !important;
+}
+.google-auth-btn:active{transform:scale(.985);}
+.google-auth-btn:disabled{opacity:.55 !important; cursor:not-allowed; transform:none;}
+.google-logo{width:20px; height:20px; display:block; flex:none;}
+.google-logo path{/* brand colors from SVG fill */}
+.auth-divider{display:flex; align-items:center; gap:10px; margin:14px 0 2px; color:var(--muted); font-size:11px;}
+.auth-divider::before, .auth-divider::after{content:""; height:1px; flex:1; background:var(--line);}
+
+/* Auth sheet */
+
+/* Auth must sit above sticky header */
+#authOverlay{
+  z-index: 1200 !important;
+  align-items: flex-end !important;
+  padding-top: 0 !important;
+}
+#authOverlay .auth-sheet{
+  max-height: min(92dvh, 920px) !important;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  margin-bottom: 0 !important;
+}
+#authOverlay.open{
+  display: flex !important;
+}
+
+.auth-sheet{
+  max-width:420px;
+  padding:0 !important;
+  overflow:hidden;
+  border-radius:28px 28px 0 0 !important;
+  background:linear-gradient(180deg,#0f171f 0%, #0a1118 100%) !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  box-shadow:0 -24px 80px rgba(0,0,0,.55), 0 0 60px rgba(61,200,130,.06) !important;
+}
+.auth-hero{
+  position:relative;
+  padding:22px 22px 20px;
+  overflow:hidden;
+  background:
+    radial-gradient(120% 90% at 90% -10%, rgba(100,227,154,.22), transparent 55%),
+    linear-gradient(145deg,#123f32 0%, #0d2a22 48%, #0a1c18 100%);
+  color:#fff;
+  border-bottom:1px solid rgba(255,255,255,.06);
+}
+.auth-hero-glow{
+  position:absolute; width:180px; height:180px; right:-40px; top:-60px;
+  border-radius:50%;
+  background:radial-gradient(circle, rgba(100,227,154,.2), transparent 70%);
+  pointer-events:none;
+}
+.auth-hero-top{display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; position:relative; z-index:1;}
+.auth-hero-icon{
+  width:44px; height:44px; border-radius:14px;
+  background:rgba(255,255,255,.08);
+  border:1px solid rgba(255,255,255,.14);
+  display:grid; place-items:center;
+  position:relative;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
+}
+.auth-lock-body{
+  width:14px; height:11px; border-radius:3px;
+  background:#7ef0b0;
+  position:absolute; bottom:12px;
+  box-shadow:0 0 12px rgba(126,240,176,.35);
+}
+.auth-lock-shackle{
+  width:10px; height:8px; border:2.5px solid #7ef0b0; border-bottom:0;
+  border-radius:8px 8px 0 0;
+  position:absolute; top:11px;
+}
+.auth-hero-close{
+  width:36px; height:36px; border-radius:12px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(0,0,0,.22);
+  color:#d7e2e8; font-size:22px; line-height:1;
+  cursor:pointer; display:grid; place-items:center;
+  transition:background .18s ease, transform .15s ease;
+}
+.auth-hero-close:hover{background:rgba(255,255,255,.08);}
+.auth-hero-close:active{transform:scale(.95);}
+.auth-kicker{
+  position:relative; z-index:1;
+  font-size:11px; font-weight:800; letter-spacing:.14em;
+  text-transform:uppercase; color:#7ee9ae; margin-bottom:6px;
+}
+.auth-hero h2{
+  position:relative; z-index:1;
+  margin:0 0 6px; color:#fff; font-size:26px; font-weight:800;
+  letter-spacing:-.03em; line-height:1.15;
+}
+.auth-hero p{
+  position:relative; z-index:1;
+  margin:0; color:rgba(220,235,228,.78); font-size:13px; line-height:1.5; max-width:34ch;
+}
+.auth-body{padding:18px 20px 22px; background:transparent; color:#eef4f8;}
+.auth-tabs{
+  position:relative;
+  display:grid; grid-template-columns:1fr 1fr; gap:0;
+  background:rgba(0,0,0,.28);
+  padding:4px; border-radius:14px; margin-bottom:16px;
+  border:1px solid rgba(255,255,255,.08);
+}
+.auth-tabs-pill{
+  position:absolute; top:4px; left:4px; height:calc(100% - 8px);
+  width:calc(50% - 4px);
+  border-radius:11px;
+  background:linear-gradient(180deg,#1e2a35,#162028);
+  box-shadow:0 4px 14px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.06);
+  transition:transform .35s cubic-bezier(.2,.9,.3,1);
+  z-index:0; pointer-events:none;
+}
+.auth-tabs[data-mode="register"] .auth-tabs-pill{transform:translateX(100%);}
+.auth-tabs button{
+  position:relative; z-index:1;
+  border:0; padding:11px 8px; border-radius:11px;
+  background:transparent !important; color:#8b98a5;
+  font:800 13px/1 'PT Sans',sans-serif; cursor:pointer;
+  transition:color .2s ease;
+}
+.auth-tabs button.active{color:#f4f8fb !important; background:transparent !important; box-shadow:none !important;}
+.auth-fields{display:flex; flex-direction:column; gap:0;}
+.auth-label, #authOverlay label.auth-label{
+  display:block; font-size:11px; font-weight:800; letter-spacing:.04em;
+  text-transform:uppercase; color:#7f8d9a !important; margin:12px 0 7px;
+}
+.auth-field{position:relative;}
+.auth-field input,
+#authOverlay .auth-field input{
+  width:100%;
+  padding:13px 44px 13px 14px !important;
+  border-radius:14px !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  background:#0b1219 !important;
+  color:#f2f6f9 !important;
+  -webkit-text-fill-color:#f2f6f9 !important;
+  font:15px/1.3 'PT Sans',sans-serif !important;
+  transition:border-color .18s ease, box-shadow .18s ease, background .18s ease !important;
+}
+.auth-field input::placeholder{color:#5f6d7a !important; -webkit-text-fill-color:#5f6d7a !important;}
+.auth-field input:focus{
+  border-color:rgba(100,227,154,.45) !important;
+  background:#0e161e !important;
+  box-shadow:0 0 0 4px rgba(100,227,154,.10) !important;
+}
+.auth-field-icon{
+  position:absolute; right:14px; top:50%; transform:translateY(-50%);
+  color:#6d7c89; opacity:.9; pointer-events:none; display:grid; place-items:center;
+}
+.auth-error{
+  min-height:0; margin-top:10px; color:#ff8a95; font-size:13px; line-height:1.4;
+  font-weight:600;
+}
+.auth-error:empty{display:none;}
+.auth-actions{display:flex; flex-direction:column; gap:8px; margin-top:14px;}
+.auth-submit{
+  width:100% !important; flex:none !important;
+  min-height:52px; border-radius:15px !important;
+  font:800 15px/1 'PT Sans',sans-serif !important;
+  box-shadow:0 12px 28px rgba(67,217,137,.22) !important;
+}
+.auth-secondary{
+  width:100%; min-height:44px; border-radius:13px !important;
+  background:rgba(255,255,255,.03) !important;
+  border:1px solid rgba(255,255,255,.10) !important;
+  color:#c5d0d8 !important;
+}
+.auth-text-close{
+  width:100%; border:0; background:transparent;
+  color:#6f7e8b; font:700 13px/1 'PT Sans',sans-serif;
+  padding:10px; cursor:pointer; margin-top:2px;
+}
+.auth-text-close:hover{color:#a7b4bf;}
+.auth-note{
+  display:flex; gap:10px; align-items:flex-start;
+  background:rgba(100,227,154,.06) !important;
+  border:1px solid rgba(100,227,154,.14) !important;
+  border-radius:14px; padding:12px 13px; margin-top:14px;
+  font-size:12px; line-height:1.45;
+  color:#9aabb8 !important;
+  -webkit-text-fill-color:#9aabb8 !important;
+}
+.auth-note-icon{color:#6ee7a6; font-size:13px; line-height:1.4; flex:none;}
+.auth-note span, .auth-note b{
+  color:#9aabb8 !important;
+  -webkit-text-fill-color:#9aabb8 !important;
+}
+#authOverlay .google-auth-btn{
+  margin-top:2px !important;
+  min-height:50px !important;
+  border-radius:15px !important;
+  background:linear-gradient(180deg,#1a2430,#121a22) !important;
+  border:1px solid rgba(255,255,255,.12) !important;
+  color:#edf3f7 !important;
+  -webkit-text-fill-color:#edf3f7 !important;
+  box-shadow:0 8px 20px rgba(0,0,0,.22) !important;
+}
+#authOverlay .google-auth-btn:hover{
+  border-color:rgba(100,227,154,.3) !important;
+  background:linear-gradient(180deg,#222e3b,#17212b) !important;
+}
+#authOverlay .google-auth-btn span,
+#authOverlay .google-auth-label{
+  color:#edf3f7 !important;
+  -webkit-text-fill-color:#edf3f7 !important;
+}
+.auth-divider{
+  display:flex; align-items:center; gap:12px;
+  margin:14px 0 4px; color:#6a7885; font-size:11px; font-weight:700;
+  letter-spacing:.04em; text-transform:uppercase;
+}
+.auth-divider::before, .auth-divider::after{
+  content:""; height:1px; flex:1;
+  background:linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
+}
+@media(max-width:520px){
+  .auth-sheet{max-width:100%; border-radius:24px 24px 0 0 !important;}
+  .auth-body{padding:16px 16px 20px;}
+  .auth-hero{padding:18px 16px 16px;}
+  .auth-hero h2{font-size:24px;}
+}
+
+.auth-success{display:none; text-align:center; padding:28px 22px 26px; background:#0d151d;}
+.auth-success.open{display:block;}
+.auth-success-icon{width:68px; height:68px; margin:0 auto 14px; border-radius:50%; display:flex; align-items:center; justify-content:center; background:rgba(59,110,78,.13); font-size:34px;}
+.auth-success h2{font-size:23px; margin:0 0 8px; color:#f4f8fa;}
+.auth-success p{margin:0; color:#95a2b0; font-size:14px; line-height:1.5;}
+.auth-email-highlight{display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; font-weight:700; color:var(--text);}
+.auth-spam{margin:16px 0 0; padding:12px; border-radius:10px; background:rgba(227,162,59,.13); border:1px solid rgba(227,162,59,.35); font-size:12px; line-height:1.45; color:var(--text);}
+.auth-countdown{margin-top:12px; font-size:12px; color:#95a2b0;}
+.auth-success-actions{display:flex; gap:8px; margin-top:18px;}
+.auth-success-actions button{flex:1;}
+.auth-close-link{width:100%; margin-top:8px;}
+.auth-locked{opacity:.7; cursor:not-allowed!important;}
+.password-reset-view{display:none; padding:26px 22px 24px; background:#0d151d;}
+.password-reset-view.open{display:block;}
+.password-reset-icon{width:64px; height:64px; border-radius:18px; background:#111a23; display:flex; align-items:center; justify-content:center; font-size:30px; margin:0 auto 14px;}
+.password-reset-view h2{font-size:23px; text-align:center; margin:0 0 7px; color:#f4f8fa;}
+.password-reset-view .reset-subtitle{text-align:center; color:#95a2b0; font-size:13px; line-height:1.45; margin:0 0 18px;}
+.password-reset-error{min-height:18px; margin-top:10px; color:#ff7c89; font-size:13px;}
+.password-reset-success{display:none; text-align:center; padding:8px 0 4px;}
+.password-reset-success.open{display:block;}
+.password-reset-success h3{font-size:21px; margin:0 0 8px; color:#f4f8fa;}
+.password-reset-success p{margin:0; color:#95a2b0; font-size:13px;}
+
+/* Nickname required state */
+#profileOverlay.nickname-required .sheet::before{
+  content:"Сначала придумай никнейм";
+  display:block; margin:0 0 12px; padding:10px 12px; border-radius:12px;
+  background:rgba(100,227,154,.10); border:1px solid rgba(100,227,154,.22);
+  color:#82ecae; font-size:13px; font-weight:700;
+}
+
+/* Detail sheet */
+.detail-overlay, #detailOverlay{align-items:flex-end!important; overflow:hidden!important; z-index:10!important;}
+.detail-sheet, #detailOverlay .detail-sheet{
+  display:flex!important; flex-direction:column!important;
+  width:100%!important; max-width:680px!important;
+  height:min(94dvh,900px); max-height:94dvh!important; min-height:0!important;
+  margin:0!important; padding:0!important; overflow:hidden!important;
+  border-radius:26px 26px 0 0!important;
+  background:linear-gradient(180deg,#0e1820 0%,#081118 100%)!important;
+  border:1px solid rgba(100,227,154,.14)!important;
+  box-shadow:0 -20px 90px rgba(0,0,0,.58)!important;
+}
+#detailPhotoWrap{flex:0 0 auto!important; width:100%!important; padding:12px 18px 0!important; box-sizing:border-box!important; overflow:hidden!important; max-height:31dvh;}
+.detail-photo, .detail-photo-placeholder, #detailOverlay .detail-sheet .detail-photo, #detailOverlay .detail-sheet .detail-photo-placeholder{
+  display:block!important; width:100%!important; max-width:100%!important; height:auto!important;
+  max-height:28dvh!important; min-height:0!important; aspect-ratio:auto!important;
+  object-fit:contain!important; object-position:center!important; margin:0!important;
+  border-radius:18px!important; background:#071017!important; border:1px solid rgba(255,255,255,.07);
+  box-sizing:border-box!important;
+}
+.detail-body, #detailOverlay .detail-sheet .detail-body{
+  flex:1 1 auto!important; min-height:0!important; overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch; overscroll-behavior:contain; touch-action:pan-y;
+  padding:16px 18px calc(22px + env(safe-area-inset-bottom,0px))!important;
+}
+.detail-body h2{font-size:clamp(25px,5.8vw,34px)!important; line-height:1.12!important; margin:5px 0 14px!important; color:#f5f8fb!important; letter-spacing:-.04em!important;}
+.detail-badges{display:flex; flex-wrap:wrap; gap:9px; margin-bottom:18px;}
+.detail-badges .category-badge, .detail-badges .want{margin:0!important; font-size:13px; padding:8px 13px;}
+.detail-body p.full-desc{color:#9baab8!important; font-size:15px!important; line-height:1.55!important; margin:0 0 18px!important;}
+.detail-author.detail-row{margin:0; padding:13px 2px; min-height:62px; border-top:1px solid rgba(255,255,255,.07); border-bottom:1px solid rgba(255,255,255,.07); display:flex; align-items:center; gap:8px; cursor:pointer;}
+.detail-avatar{width:44px!important; height:44px!important; border-radius:14px!important; font-size:16px!important; flex:0 0 44px;}
+.detail-author-copy{min-width:0; display:flex; flex-direction:column; gap:2px;}
+.detail-label{font-size:11px; color:#71808e; text-transform:uppercase; letter-spacing:.08em;}
+.detail-author-copy strong{color:#edf4f8; font-size:15px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+.detail-chevron{margin-left:auto; color:#8795a3; font-size:28px; line-height:1;}
+.detail-info{margin-top:15px; padding:17px 17px 12px; border-radius:21px; background:rgba(255,255,255,.025); border:1px solid rgba(255,255,255,.07);}
+.detail-info-title{font-size:18px; font-weight:800; color:#f1f6f8; margin-bottom:12px;}
+.detail-info-row{display:flex; justify-content:space-between; align-items:center; gap:16px; padding:11px 0; color:#8fa0af; font-size:14px; border-top:1px solid rgba(255,255,255,.055);}
+.detail-info-row:first-of-type{border-top:0;}
+.detail-info-row span{display:flex; align-items:center; gap:10px;}
+.detail-info-row i{width:23px; text-align:center; color:#6ee7a6; font-style:normal; font-size:17px;}
+.detail-info-row strong{color:#eaf2f6; font-size:13px; text-align:right; font-weight:650;}
+.detail-actions{display:flex; flex-direction:column; gap:10px; margin-top:16px;}
+.detail-chat-btn{
+  width:100%!important; min-height:58px; border-radius:18px!important;
+  display:flex!important; align-items:center!important; justify-content:space-between!important;
+  gap:12px!important; padding:0 20px!important; font-size:16px!important; text-align:left!important;
+}
+.detail-chat-btn span{font-size:25px; line-height:1; margin-left:auto;}
+.detail-close-btn{
+  width:100%; min-height:54px; border-radius:17px; border:1px solid rgba(100,227,154,.14);
+  background:rgba(255,255,255,.035); color:#d9e2e8; font-size:15px; font-weight:700; cursor:pointer; transition:.2s ease;
+}
+.detail-close-btn:hover{background:rgba(255,255,255,.06); border-color:rgba(100,227,154,.28);}
+.detail-close-btn span{font-size:25px; vertical-align:-2px; margin-right:6px;}
+#detailOverlay .close-x, #detailOverlay #detailClose{display:none!important;}
+
+
+
+.btn-spinner{
+  display:inline-block;
+  width:14px; height:14px;
+  border:2px solid rgba(6,18,11,.25);
+  border-top-color:#06120b;
+  border-radius:50%;
+  animation:btnSpin .7s linear infinite;
+  vertical-align:-2px;
+  margin-right:8px;
+  flex:none;
+}
+button.primary .btn-spinner,
+.chat-send .btn-spinner{
+  border-color:rgba(6,18,11,.22);
+  border-top-color:#06120b;
+}
+.chat-send .btn-spinner{margin:0; width:16px; height:16px;}
+@keyframes btnSpin{to{transform:rotate(360deg)}}
+button.primary[aria-busy="true"],
+.chat-send[aria-busy="true"]{
+  opacity:.9;
+  pointer-events:none;
+  cursor:wait;
+}
+
+/* Lock page scroll when any modal is open */
+html.overlay-open, body.overlay-open{
+  overflow:hidden !important;
+  overscroll-behavior:none !important;
+  touch-action:none !important;
+}
+body.overlay-open{
+  position:fixed !important;
+  left:0 !important;
+  right:0 !important;
+  width:100% !important;
+}
+
+html.detail-open, body.detail-open{overflow:hidden!important; overscroll-behavior:none!important; touch-action:none!important;}
+body.detail-open{position:fixed!important; left:0!important; right:0!important; width:100%!important;}
+
+/* Author listings */
+.author-listings-sheet{
+  width:min(960px,calc(100% - 24px))!important; max-height:min(88dvh,900px)!important;
+  display:flex!important; flex-direction:column!important; overflow:hidden!important;
+  background:linear-gradient(180deg,#101922,#0b131a)!important; border:1px solid rgba(255,255,255,.10)!important; color:#edf4f7!important;
+}
+.author-listings-top{display:flex; align-items:center; justify-content:space-between; gap:16px; padding:22px 24px 16px; border-bottom:1px solid rgba(255,255,255,.08); flex:0 0 auto;}
+.author-listings-top h2{margin:4px 0 3px; color:#f4f8fa!important; font-size:26px;}
+.author-listings-top p{margin:0; color:#82909d!important;}
+.author-listings-top-spacer{width:42px; height:42px; flex:0 0 42px;}
+.author-listings-grid{flex:1 1 auto; min-height:0; overflow:auto; padding:18px 20px 22px; display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; -webkit-overflow-scrolling:touch; overscroll-behavior:contain; touch-action:pan-y;}
+.author-listing-card{overflow:hidden; border:1px solid rgba(255,255,255,.09); border-radius:20px; background:linear-gradient(180deg,#121d26,#0d151c); box-shadow:0 14px 35px rgba(0,0,0,.20); cursor:pointer; transition:transform .18s ease,border-color .18s ease;}
+.author-listing-card:hover{transform:translateY(-3px); border-color:rgba(100,227,154,.28);}
+.author-listing-card .author-listing-photo{width:100%; aspect-ratio:1.15; display:block; object-fit:cover; background:#081017;}
+.author-listing-card .author-listing-photo.placeholder{display:grid; place-items:center; color:#62717e; font-size:32px;}
+.author-listing-card-body{padding:13px 14px 15px;}
+.author-listing-card-body h3{margin:9px 0 7px; color:#f1f6f8!important; font-size:17px; line-height:1.22;}
+.author-listing-card-body p{margin:0; color:#8795a2!important; font-size:14px; line-height:1.4;}
+.author-listing-card-body .want{display:inline-block; margin-top:12px; max-width:100%; white-space:normal;}
+.author-listings-empty{grid-column:1/-1; min-height:220px; display:grid; place-items:center; text-align:center; color:#8b99a6; border:1px dashed rgba(255,255,255,.10); border-radius:20px; background:rgba(255,255,255,.02);}
+.author-listings-bottom-close{flex:0 0 auto; margin:0 20px 18px; width:calc(100% - 40px);}
+html.author-modal-open, body.author-modal-open{overflow:hidden!important; overscroll-behavior:none!important; touch-action:none!important;}
+body.author-modal-open{position:fixed!important; left:0!important; right:0!important; width:100%!important;}
+#authorListingsOverlay{overflow:hidden!important; overscroll-behavior:none!important; touch-action:none!important;}
+
+/* Chats full-screen layers */
+#chatsOverlay, #chatOverlay{
+  position:fixed!important; inset:0!important; width:100vw!important; height:100dvh!important;
+  max-width:none!important; max-height:none!important; margin:0!important; padding:0!important;
+  z-index:99999!important; background:#070c11!important; overflow:hidden!important;
+  align-items:stretch!important; justify-content:stretch!important;
+}
+#chatsOverlay .chat-list-sheet, #chatOverlay .chat-sheet{
+  width:100%!important; height:100dvh!important; max-width:none!important; max-height:none!important;
+  margin:0!important; padding:0!important; border-radius:0!important; border:0!important;
+  background:#090f15!important; color:#edf4f7!important; box-shadow:none!important;
+  display:flex!important; flex-direction:column!important; overflow:hidden!important;
+}
+.chat-list-top{flex:0 0 auto; padding:calc(14px + env(safe-area-inset-top,0px)) 16px 14px; background:#0b141c; border-bottom:1px solid rgba(255,255,255,.09);}
+.chat-list-topline{display:flex; align-items:center; justify-content:space-between; gap:12px;}
+.chat-list-heading{font-size:25px; font-weight:800; margin:0; display:flex; align-items:center; gap:9px; color:#f3f7f9;}
+.chat-unread-count{display:none; min-width:22px; height:22px; padding:0 7px; border-radius:999px; background:var(--accent); color:#06120b; font-size:11px; font-weight:700; align-items:center; justify-content:center;}
+.chat-search{margin-top:12px; display:flex; align-items:center; gap:8px; border:1px solid rgba(255,255,255,.12); background:#111b24; border-radius:13px; padding:0 12px;}
+.chat-search span{font-size:16px; opacity:.7;}
+.chat-search input{border:0!important; outline:0; background:transparent!important; padding:11px 2px!important; min-width:0; box-shadow:none!important; color:#edf4f7!important; -webkit-text-fill-color:#edf4f7!important;}
+.chat-list{flex:1 1 auto; min-height:0; overflow-y:auto; padding:12px 12px calc(18px + env(safe-area-inset-bottom,0px)); display:flex; flex-direction:column; gap:5px; background:#080e14; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;}
+.chat-list-item{width:100%; display:grid; grid-template-columns:48px minmax(0,1fr) auto; gap:11px; align-items:center; text-align:left; background:#101920; border:0; border-radius:15px; padding:11px 10px; color:var(--text); cursor:pointer; transition:background .15s ease;}
+.chat-list-item:hover{background:#152028;}
+.chat-list-item.unread{background:#0f241b;}
+.chat-list-avatar{width:46px; height:46px; border-radius:13px; font-size:17px; position:relative; flex:none;}
+.chat-list-main{min-width:0; display:flex; flex-direction:column; gap:3px;}
+.chat-list-line{display:flex; align-items:center; gap:7px; min-width:0;}
+.chat-list-name{font-weight:800; font-size:14px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#f1f5f7;}
+.chat-list-title{font-size:11px; color:#64d895; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+.chat-list-preview{font-size:12px; color:#8998a3; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; line-height:1.35;}
+.chat-list-meta{align-self:stretch; display:flex; flex-direction:column; align-items:flex-end; justify-content:flex-start; gap:6px; min-width:45px;}
+.chat-list-time{font-size:10px; color:#8998a3; white-space:nowrap;}
+.chat-unread-dot{display:none; min-width:19px; height:19px; padding:0 5px; border-radius:999px; background:var(--accent); color:#06120b; font-size:10px; font-weight:700; align-items:center; justify-content:center;}
+.chat-list-item.unread .chat-unread-dot{display:flex;}
+.chat-list-empty{color:var(--muted); font-size:13px; text-align:center; padding:50px 18px; line-height:1.5;}
+.chat-list-empty-icon{font-size:40px; margin-bottom:8px; opacity:.75;}
+#chatsClose{
+  width:44px!important; height:44px!important; min-width:44px!important; padding:0!important;
+  font-size:0!important; color:transparent!important; background:#16222c!important;
+  border:1px solid rgba(255,255,255,.12)!important; border-radius:14px!important; position:relative!important;
+}
+#chatsClose::before, #chatsClose::after{content:""!important; position:absolute!important; width:19px!important; height:2px!important; background:#f3f7f9!important; border-radius:2px!important; left:12px!important; top:20px!important;}
+#chatsClose::before{transform:rotate(45deg)!important;}
+#chatsClose::after{transform:rotate(-45deg)!important;}
+
+.chat-topbar{flex:0 0 auto; min-height:64px; display:flex; align-items:center; gap:10px; padding:calc(9px + env(safe-area-inset-top,0px)) 58px 9px 12px; border-bottom:1px solid rgba(255,255,255,.09); background:#0b141c; position:relative;}
+.chat-back{width:38px; height:38px; border-radius:12px; border:1px solid rgba(255,255,255,.12); background:#16222c; color:#f3f7f9; cursor:pointer; font-size:20px; display:flex; align-items:center; justify-content:center; flex:none;}
+.chat-person-avatar{width:40px; height:40px; border-radius:12px; font-size:17px; flex:none;}
+.chat-top-info{min-width:0; flex:1;}
+.chat-top-name{font-weight:800; font-size:15px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:#f3f7f9;}
+.chat-top-sub{font-size:11px; color:#81909b; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px;}
+.chat-listing-mini{display:flex; align-items:center; gap:6px; border:1px solid rgba(255,255,255,.10); background:#111a23; border-radius:10px; padding:7px 9px; max-width:180px; cursor:pointer;}
+.chat-listing-mini-photo{width:31px; height:31px; border-radius:7px; object-fit:cover; background:#0a1218; flex:none;}
+.chat-listing-mini-text{min-width:0; font-size:10px; line-height:1.2;}
+.chat-listing-mini-text b{display:block; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:110px;}
+.chat-listing-mini-text span{display:block; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:110px;}
+#chatExit{
+  position:absolute!important; top:calc(9px + env(safe-area-inset-top,0px))!important; right:10px!important;
+  width:42px!important; height:42px!important; display:flex!important; align-items:center!important; justify-content:center!important;
+  padding:0!important; z-index:100!important; font-size:0!important; color:transparent!important;
+  background:#16222c!important; border:1px solid rgba(255,255,255,.12)!important; border-radius:13px!important; cursor:pointer;
+}
+#chatExit::before, #chatExit::after{content:""!important; position:absolute!important; width:18px!important; height:2px!important; background:#f3f7f9!important; border-radius:2px!important;}
+#chatExit::before{transform:rotate(45deg)!important;}
+#chatExit::after{transform:rotate(-45deg)!important;}
+.chat-messages{flex:1 1 auto; min-height:0; overflow-y:auto; padding:16px 13px 12px; display:flex; flex-direction:column; gap:4px; background:#080e14; scroll-behavior:smooth; -webkit-overflow-scrolling:touch; overscroll-behavior:contain;}
+.chat-date-separator{align-self:center; margin:8px 0 5px; padding:4px 9px; border-radius:999px; background:#18242c; border:1px solid rgba(255,255,255,.08); font-size:10px; color:#9aa8b0; font-weight:700;}
+.msg-row{display:flex; align-items:flex-end; gap:6px; margin:1px 0;}
+.msg-row.me{justify-content:flex-end;}
+.msg{max-width:min(78%,440px); padding:8px 10px 6px; border-radius:15px; font-size:14px; line-height:1.38; word-break:break-word; box-shadow:0 1px 2px rgba(0,0,0,.04);}
+.msg.me{background:#137653; color:#fff; border-bottom-right-radius:5px; border:0;}
+.msg.them{background:#151f27; color:#e9eff2; border:1px solid rgba(255,255,255,.08); border-bottom-left-radius:5px;}
+.msg-time{font-size:9px; opacity:.7; float:right; margin:4px 0 0 9px; white-space:nowrap; line-height:1;}
+.msg-text{white-space:pre-wrap;}
+.chat-empty{color:var(--muted); font-size:13px; text-align:center; margin:auto; max-width:260px; line-height:1.5;}
+.chat-empty-icon{font-size:38px; display:block; margin-bottom:8px;}
+.chat-input-wrap{flex:0 0 auto; padding:8px 10px calc(9px + env(safe-area-inset-bottom,0px)); border-top:1px solid rgba(255,255,255,.09); background:#0b141c;}
+.chat-input-row{display:flex; align-items:flex-end; gap:7px; padding:0; border:1px solid rgba(255,255,255,.11); background:#111c25; border-radius:16px; overflow:hidden;}
+.chat-input-row textarea{flex:1; min-height:42px; max-height:120px; resize:none; border:0!important; background:transparent!important; outline:0; padding:11px 8px 10px 13px!important; font-size:14px; line-height:1.35; box-shadow:none!important; color:#edf4f7!important; -webkit-text-fill-color:#edf4f7!important;}
+.chat-send{width:42px; height:42px; margin:3px; border-radius:13px; background:linear-gradient(135deg,#76eda9,#43d989); color:#06120b; border:0; cursor:pointer; font-size:18px; display:flex; align-items:center; justify-content:center;}
+.chat-send:disabled{opacity:.45; cursor:not-allowed;}
+.chat-input-hint{font-size:9px; color:#6f7e89; padding:4px 5px 0;}
+html.v14-chat-lock, body.v14-chat-lock{overflow:hidden!important; overscroll-behavior:none!important;}
+body.v14-chat-lock{touch-action:none!important;}
+
+/* Auth gate top toast */
+#authGateOverlay.auth-gate-top, #authGateOverlay{
+  position:fixed!important; z-index:1600!important;
+  top:calc(env(safe-area-inset-top,0px) + 12px)!important; left:50%!important; bottom:auto!important;
+  width:min(520px,calc(100% - 20px))!important; max-width:none!important;
+  transform:translate(-50%,-24px)!important; opacity:0!important; pointer-events:none!important;
+  display:block!important; padding:0!important; background:transparent!important;
+  transition:opacity .22s ease, transform .28s cubic-bezier(.2,.8,.2,1)!important;
+  align-items:unset!important; justify-content:unset!important;
+}
+#authGateOverlay.open{opacity:1!important; transform:translate(-50%,0)!important; pointer-events:auto!important;}
+.auth-gate-top-card{
+  display:flex!important; align-items:center!important; gap:12px!important; min-height:66px!important;
+  padding:10px 10px 10px 12px!important; border-radius:19px!important;
+  background:linear-gradient(135deg,rgba(20,31,40,.98),rgba(9,17,23,.98))!important;
+  border:1px solid rgba(113,239,177,.18)!important;
+  box-shadow:0 18px 48px rgba(0,0,0,.48),inset 0 1px 0 rgba(255,255,255,.06)!important;
+  backdrop-filter:blur(18px)!important; -webkit-backdrop-filter:blur(18px)!important;
+}
+.auth-gate-top-icon{flex:0 0 40px!important; width:40px!important; height:40px!important; display:grid!important; place-items:center!important; border-radius:13px!important; color:#83efb5!important; font-size:21px!important; font-weight:900!important; background:linear-gradient(145deg,#1a654c,#0b3f30)!important; border:1px solid rgba(113,239,177,.22)!important;}
+.auth-gate-top-text{min-width:0!important; flex:1!important; display:flex!important; flex-direction:column!important; gap:3px!important; text-align:left!important;}
+.auth-gate-top-text strong{color:#f3f7f8!important; font:800 15px/1.1 'PT Sans',sans-serif!important;}
+.auth-gate-top-text span{color:#8e9da7!important; font:400 12px/1.25 'PT Sans',sans-serif!important;}
+.auth-gate-top-close{flex:0 0 auto!important; border:0!important; border-radius:11px!important; padding:10px 11px!important; background:rgba(255,255,255,.055)!important; color:#aebbc2!important; font:700 12px/1 'PT Sans',sans-serif!important; cursor:pointer!important;}
+
+/* Admin / ban */
+.admin-sheet, .ban-sheet, .ban-notice-sheet{background:linear-gradient(180deg,#0f171f,#0a1118)!important; color:#eef4f7!important; border:1px solid rgba(255,255,255,.1)!important; max-width:680px; width:min(680px,calc(100vw - 24px));}
+.admin-head, .ban-head{display:flex; justify-content:space-between; gap:16px; align-items:flex-start; margin-bottom:16px;}
+.admin-kicker{font-size:11px; text-transform:uppercase; letter-spacing:.14em; color:#65dfa0; font-weight:800; margin-bottom:5px;}
+.admin-sheet h2, .ban-sheet h2, .ban-notice-sheet h2{color:#f5f8fa!important; margin:0; font-size:25px;}
+.admin-head p, .ban-head p{margin:5px 0 0; color:#8d9aa7; font-size:13px;}
+.admin-close{width:42px; height:42px; border-radius:13px; border:1px solid rgba(255,255,255,.1); background:#111b24; color:#eef4f7; font-size:27px; line-height:1; cursor:pointer; flex:0 0 auto;}
+.admin-search-wrap{position:relative; margin-bottom:12px;}
+.admin-search-wrap input{width:100%; padding:13px 42px 13px 14px!important; border-radius:14px!important; background:#111b24!important; color:#eef4f7!important; border:1px solid rgba(255,255,255,.11)!important;}
+.admin-search-wrap span{position:absolute; right:15px; top:50%; transform:translateY(-50%); color:#71808e; font-size:22px;}
+.admin-list{display:flex; flex-direction:column; gap:9px; max-height:min(58vh,600px); overflow:auto; padding-right:2px;}
+.admin-user-card{display:grid; grid-template-columns:44px minmax(0,1fr) auto; gap:11px; align-items:center; padding:11px; border:1px solid rgba(255,255,255,.09); border-radius:16px; background:#111a23;}
+.admin-user-avatar{width:44px; height:44px; border-radius:14px; font-size:17px;}
+.admin-user-name{font-weight:800; color:#eef4f7;}
+.admin-user-email{font-size:12px; color:#8d9aa7;}
+.admin-user-status{font-size:11px; color:#ff9b9b; margin-top:2px;}
+.admin-user-status.ok{color:#71e8a4;}
+.admin-user-action{border:1px solid rgba(255,255,255,.1); background:#18232d; color:#eef4f7; border-radius:11px; padding:9px 11px; font-weight:700; cursor:pointer; white-space:nowrap;}
+.admin-user-action.banned{border-color:rgba(238,118,118,.28); color:#ff9b9b; background:rgba(145,40,40,.12);}
+.admin-error{color:#ff8991; font-size:12px; line-height:1.4; margin-top:10px; min-height:16px;}
+.ban-type-grid{display:grid; grid-template-columns:1fr 1fr; gap:9px;}
+.ban-type, .ban-duration{border:1px solid rgba(255,255,255,.1); background:#111b24; color:#c8d1d8; border-radius:13px; padding:11px; text-align:left; cursor:pointer;}
+.ban-type b{display:block; color:#eef4f7; margin-bottom:4px;}
+.ban-type span{display:block; font-size:11px; line-height:1.35; color:#7f8d99;}
+.ban-type.active{border-color:#57d993; background:rgba(64,201,130,.11); box-shadow:0 0 0 1px rgba(87,217,147,.14) inset;}
+.ban-duration-grid{display:grid; grid-template-columns:repeat(5,1fr); gap:7px;}
+.ban-duration{text-align:center; padding:10px 6px; font-size:12px;}
+.ban-duration.active{background:#173b2d; border-color:#55d591; color:#9af0bd;}
+.ban-preview{margin-top:12px; padding:11px 12px; border-radius:12px; background:#0c151d; border:1px solid rgba(255,255,255,.07); color:#9caab6; font-size:12px; line-height:1.45;}
+.ban-submit{background:linear-gradient(135deg,#ff7676,#e94f5c)!important; color:#180708!important;}
+.ban-unban{width:100%; margin-top:8px!important; color:#ff9b9b!important; background:#171318!important; border-color:rgba(255,100,100,.18)!important;}
+.ban-notice-sheet{text-align:center; max-width:430px;}
+.ban-notice-icon{width:58px; height:58px; margin:0 auto 14px; border-radius:18px; display:flex; align-items:center; justify-content:center; background:rgba(239,94,94,.13); border:1px solid rgba(239,94,94,.25); color:#ff8585; font-size:29px; font-weight:900;}
+.ban-notice-sheet p{color:#9ba8b3; line-height:1.5; margin:10px 0;}
+.ban-notice-time{padding:10px 12px; border-radius:12px; background:#111b24; color:#f0f4f6; font-weight:700; margin:14px 0 18px;}
+.ban-notice-sheet .primary{width:100%;}
+#banNoticeOverlay{z-index:1000000!important; position:fixed!important; inset:0!important; isolation:isolate!important;}
+#banNoticeOverlay.open{display:flex!important; z-index:1000000!important;}
+#banNoticeOverlay .ban-notice-sheet{position:relative!important; z-index:1000001!important;}
+
+.moderation-reasons{display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:14px;}
+.moderation-reason{width:100%; text-align:left; border:1px solid rgba(255,255,255,.1); background:#111a23; color:var(--text); border-radius:10px; padding:11px 12px; cursor:pointer; font-size:13px;}
+.moderation-reason:hover{background:#16212b; border-color:var(--accent);}
+.moderation-note{margin:10px 0 0; color:var(--muted); font-size:12px; line-height:1.4;}
+
+::-webkit-scrollbar{width:10px; height:10px}
+::-webkit-scrollbar-track{background:#080c11}
+::-webkit-scrollbar-thumb{background:#26323e; border-radius:999px; border:2px solid #080c11;}
+::-webkit-scrollbar-thumb:hover{background:#344454}
+
+@media(max-width:900px){
+  main{width:min(100% - 32px,720px);}
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr));}
+  .hero{padding:34px 32px; min-height:260px;}
+  .hero-art{transform:scale(.88); transform-origin:right center; margin-right:-20px;}
+}
+@media(max-width:760px){
+  .author-listings-sheet{width:100%!important; max-height:calc(100dvh - 74px)!important; border-radius:24px 24px 0 0!important; margin:0!important;}
+  .author-listings-grid{grid-template-columns:repeat(2,minmax(0,1fr)); padding:14px; gap:12px;}
+  .author-listings-top{padding:18px 16px 14px;}
+  .author-listings-top h2{font-size:22px;}
+  .author-listings-bottom-close{margin:0 14px calc(14px + env(safe-area-inset-bottom,0px)); width:calc(100% - 28px);}
+}
+@media(max-width:620px){
+  .site-header, header{min-height:64px; padding:9px 14px;}
+  .brand-mark, .modern-exchange-logo{width:38px; height:38px; border-radius:11px;}
+  .brand b{font-size:15px;}
+  .brand span{font-size:9px;}
+  .profile-chip>span:not(.profile-chevron){display:none;}
+  .header-chat-btn{padding:0 12px; min-width:104px;}
+  .header-chat-btn span:last-child{display:inline; white-space:nowrap; font-size:13px;}
+  main{width:calc(100% - 24px); padding:20px 0 95px;}
+  .hero{min-height:340px; padding:27px 24px; align-items:flex-start; border-radius:23px;}
+  .hero-copy{max-width:100%;}
+  h1.page-title{font-size:43px; margin-top:15px;}
+  .hero-text{font-size:13px; max-width:330px;}
+  .hero-art{position:absolute; right:-18px; bottom:-48px; transform:scale(.68); transform-origin:center;}
+  .market-toolbar{margin:30px 0 13px; align-items:center;}
+  .market-toolbar h2{font-size:21px;}
+  .category-tabs{width:100%; overflow-x:auto; flex-wrap:nowrap; scrollbar-width:none; margin-bottom:15px;}
+  .category-tabs::-webkit-scrollbar{display:none;}
+  .category-tab{white-space:nowrap;}
+  .grid{grid-template-columns:1fr 1fr; gap:10px;}
+  .card{border-radius:14px;}
+  .card .body{padding:10px;}
+  .card h3{font-size:14px;}
+  .fab{right:16px; bottom:16px; width:54px; height:54px; border-radius:16px;}
+  .sheet{border-radius:20px 20px 0 0; padding:20px;}
+  .detail-sheet, #detailOverlay .detail-sheet{height:calc(100dvh - 72px)!important; max-height:calc(100dvh - 72px)!important; border-radius:22px 22px 0 0!important;}
+  .chat-listing-mini{display:none;}
+  .msg{max-width:84%;}
+  .moderation-reasons{grid-template-columns:1fr;}
+  .admin-user-card{grid-template-columns:42px minmax(0,1fr);}
+  .admin-user-action{grid-column:2; justify-self:start;}
+  .ban-type-grid{grid-template-columns:1fr;}
+  .ban-duration-grid{grid-template-columns:repeat(2,1fr);}
+  .admin-sheet, .ban-sheet{width:calc(100vw - 18px); max-height:88dvh; overflow:auto;}
+  .admin-list{max-height:50dvh;}
+  #authGateOverlay{width:calc(100% - 16px)!important; top:calc(env(safe-area-inset-top,0px) + 8px)!important;}
+  .auth-sheet{max-width:100%;}
+  .auth-body{padding-left:18px; padding-right:18px;}
+}
+@media(max-width:390px){
+  .grid{grid-template-columns:1fr;}
+  .hero{min-height:350px;}
+}
+</style>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="brand">
+    <div class="brand-mark modern-exchange-logo" aria-label="Обмен">
+          <span class="logo-arrow logo-arrow-a"></span>
+          <span class="logo-arrow logo-arrow-b"></span>
+        </div>
+    <div class="brand-copy">
+      <b>Обмен 101</b>
+      <span>МБОУ СОШ №101 · Воронеж</span>
+      <div class="online-now" id="onlineNow" aria-live="polite">
+        <span class="online-dot"></span>
+        <span>Сейчас на сайте: <b id="onlineCount">0</b></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="header-actions">
+    <button class="header-chat-btn admin-header-btn" id="openAdminBtn" type="button" style="display:none;" aria-label="Администрация">
+      <span class="admin-shield-icon">◆</span>
+      <span>Админ</span>
+    </button>
+    <button class="header-chat-btn" id="openChatsBtn">
+      <span class="header-chat-icon"></span>
+      <span>Чаты</span>
+    </button>
+    <div class="profile-chip" id="profileChip">
+      <div class="avatar" id="avatarLetter">?</div>
+      <span id="nickLabel">Войти</span>
+      <span class="profile-chevron">⌄</span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow"><span class="eyebrow-dot"></span> Обмен внутри школы</div>
+      <h1 class="page-title">Найди вещь.<br><span>Предложи обмен.</span></h1>
+      <p class="hero-text">Размещай свои вещи и находи то, что хочется получить взамен — просто, быстро и без лишнего.</p>
+    </div>
+    <div class="hero-art" aria-hidden="true">
+      <div class="hero-orbit orbit-one"></div>
+      <div class="hero-orbit orbit-two"></div>
+      <div class="hero-card hero-card-back"></div>
+      <div class="hero-card hero-card-front"></div>
+    </div>
+  </section>
+
+  <section class="market-toolbar">
+    <div>
+      <div class="section-kicker">Объявления</div>
+      <h2>Что сейчас меняют</h2>
+    </div>
+    <button class="toolbar-add" id="toolbarAdd" type="button"><span>＋</span> Разместить</button>
+  </section>
+
+  <div class="category-tabs" id="categoryTabs">
+    <button class="category-tab active" data-category="all">Все <span class="count" id="countAll"></span></button>
+    <button class="category-tab" data-category="meme"> Мемы <span class="count" id="countMeme"></span></button>
+    <button class="category-tab" data-category="virtual"> Виртуальные <span class="count" id="countVirtual"></span></button>
+    <button class="category-tab" data-category="real"> Реальные <span class="count" id="countReal"></span></button>
+  </div>
+
+  <div class="grid" id="grid"></div>
+</main>
+
+<button class="fab" id="fabAdd" aria-label="Добавить объявление">+</button>
+
+<!-- Auth required top notification -->
+<div class="auth-gate-top" id="authGateOverlay" aria-hidden="true">
+  <div class="auth-gate-top-card" role="status" aria-live="polite">
+    <div class="auth-gate-top-icon" aria-hidden="true">↗</div>
+    <div class="auth-gate-top-text">
+      <strong>Нужен аккаунт</strong>
+      <span id="authGateText">Войдите или зарегистрируйтесь, чтобы продолжить</span>
+    </div>
+    <button class="auth-gate-top-close" id="authGateClose" type="button">Не сейчас</button>
+  </div>
+</div>
+
+<!-- Administration -->
+<div class="overlay" id="adminOverlay">
+  <div class="sheet admin-sheet">
+    <div class="admin-head">
+      <div>
+        <div class="admin-kicker">Панель администрации</div>
+        <h2>Пользователи</h2>
+        <p>Управление доступом и блокировками аккаунтов.</p>
+      </div>
+      <button class="admin-close" id="adminClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <div class="admin-search-wrap">
+      <input id="adminUserSearch" type="search" placeholder="Поиск по нику или email" autocomplete="off">
+      <span>⌕</span>
+    </div>
+    <div class="admin-list" id="adminUserList"></div>
+    <div class="admin-error" id="adminError"></div>
+  </div>
+</div>
+
+<!-- Ban editor -->
+<div class="overlay" id="banOverlay">
+  <div class="sheet ban-sheet">
+    <div class="ban-head">
+      <div>
+        <div class="admin-kicker">Блокировка пользователя</div>
+        <h2 id="banUserTitle">Пользователь</h2>
+        <p id="banUserEmail"></p>
+      </div>
+      <button class="admin-close" id="banClose" type="button" aria-label="Закрыть">×</button>
+    </div>
+    <label>Тип блокировки</label>
+    <div class="ban-type-grid">
+      <button class="ban-type active" data-ban-type="full" type="button"><b>Полная</b><span>Нельзя войти и пользоваться аккаунтом.</span></button>
+      <button class="ban-type" data-ban-type="partial" type="button"><b>Не полная</b><span>Можно входить, смотреть и писать, но нельзя публиковать.</span></button>
+    </div>
+    <label>Срок</label>
+    <div class="ban-duration-grid">
+      <button class="ban-duration active" data-duration="permanent" type="button">Навсегда</button>
+      <button class="ban-duration" data-duration="1d" type="button">1 день</button>
+      <button class="ban-duration" data-duration="7d" type="button">7 дней</button>
+      <button class="ban-duration" data-duration="30d" type="button">30 дней</button>
+      <button class="ban-duration" data-duration="custom" type="button">Свое время</button>
+    </div>
+    <div id="banCustomWrap" class="ban-custom-wrap" style="display:none;">
+      <label for="banCustomUntil">Заблокировать до</label>
+      <input id="banCustomUntil" type="datetime-local">
+    </div>
+    <label for="banReason">Причина <span class="optional-label">необязательно</span></label>
+    <textarea id="banReason" maxlength="300" placeholder="Например: нарушение правил обмена"></textarea>
+    <div class="ban-preview" id="banPreview"></div>
+    <div class="sheet-actions">
+      <button class="ghost" id="banCancel" type="button">Отмена</button>
+      <button class="primary ban-submit" id="banSubmit" type="button">Заблокировать</button>
+    </div>
+    <button class="ghost ban-unban" id="banRemove" type="button" style="display:none;">Снять текущую блокировку</button>
+    <div class="admin-error" id="banError"></div>
+  </div>
+</div>
+
+<!-- Ban notice -->
+<div class="overlay" id="banNoticeOverlay">
+  <div class="sheet ban-notice-sheet">
+    <div class="ban-notice-icon">!</div>
+    <div class="admin-kicker">Доступ ограничен</div>
+    <h2 id="banNoticeTitle">Ваш аккаунт заблокирован</h2>
+    <p id="banNoticeText"></p>
+    <div class="ban-notice-time" id="banNoticeTime"></div>
+    <button class="primary" id="banNoticeClose" type="button">Понятно</button>
+  </div>
+</div>
+
+<!-- Auth sheet -->
+<div class="overlay" id="authOverlay">
+  <div class="sheet auth-sheet">
+    <div id="authFormView">
+      <div class="auth-hero">
+        <div class="auth-hero-glow" aria-hidden="true"></div>
+        <div class="auth-hero-top">
+          <div class="auth-hero-icon" aria-hidden="true">
+            <span class="auth-lock-body"></span>
+            <span class="auth-lock-shackle"></span>
+          </div>
+        </div>
+        <div class="auth-kicker">Обмен 101</div>
+        <h2 id="authTitle">С возвращением</h2>
+        <p id="authSubtitle">Войди в аккаунт, чтобы общаться и размещать объявления.</p>
+      </div>
+      <div class="auth-body">
+        <div class="auth-tabs" role="tablist">
+          <span class="auth-tabs-pill" id="authTabsPill" aria-hidden="true"></span>
+          <button type="button" class="active" id="authLoginTab" role="tab" aria-selected="true">Войти</button>
+          <button type="button" id="authRegisterTab" role="tab" aria-selected="false">Регистрация</button>
+        </div>
+
+        <button class="google-auth-btn" id="googleAuthBtn" type="button" aria-label="Войти через Google">
+          <svg class="google-logo" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#4285F4" d="M21.35 12.23c0-.79-.07-1.55-.2-2.27H12v4.3h5.24a4.48 4.48 0 0 1-1.94 2.94v2.45h3.14c1.84-1.69 2.91-4.18 2.91-7.42z"/>
+            <path fill="#34A853" d="M12 21.6c2.63 0 4.84-.87 6.45-2.35l-3.14-2.45c-.87.58-1.98.93-3.31.93-2.54 0-4.69-1.72-5.46-4.03H3.3v2.53A9.74 9.74 0 0 0 12 21.6z"/>
+            <path fill="#FBBC05" d="M6.54 13.7a5.85 5.85 0 0 1 0-3.4V7.77H3.3a9.75 9.75 0 0 0 0 8.46l3.24-2.53z"/>
+            <path fill="#EA4335" d="M12 6.27c1.43 0 2.72.49 3.73 1.46l2.8-2.8C16.84 3.34 14.63 2.4 12 2.4a9.74 9.74 0 0 0-8.7 5.37l3.24 2.53C7.31 7.99 9.46 6.27 12 6.27z"/>
+          </svg>
+          <span class="google-auth-label">Продолжить с Google</span>
+        </button>
+        <div class="auth-divider"><span>или email</span></div>
+
+        <div class="auth-fields">
+          <label class="auth-label" for="authEmail">Email</label>
+          <div class="auth-field">
+            <input type="email" id="authEmail" autocomplete="email" placeholder="name@mail.ru" inputmode="email">
+            <span class="auth-field-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 6.5h16v11H4v-11z" stroke="currentColor" stroke-width="1.6"/><path d="M4.5 7l7.5 6 7.5-6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+          </div>
+          <label class="auth-label" for="authPassword">Пароль</label>
+          <div class="auth-field">
+            <input type="password" id="authPassword" autocomplete="current-password" placeholder="Минимум 6 символов">
+            <span class="auth-field-icon" aria-hidden="true">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><rect x="5" y="10" width="14" height="10" rx="2" stroke="currentColor" stroke-width="1.6"/><path d="M8 10V7a4 4 0 0 1 8 0v3" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+            </span>
+          </div>
+        </div>
+
+        <div class="auth-error" id="authError"></div>
+
+        <div class="auth-actions">
+          <button class="primary auth-submit" id="authSubmit" type="button">Войти</button>
+          <button class="ghost auth-secondary" id="authReset" type="button" style="display:none;">Забыли пароль?</button>
+          <button class="auth-text-close" id="authCancel" type="button">Закрыть</button>
+        </div>
+
+        <div class="auth-note">
+          <span class="auth-note-icon" aria-hidden="true">✦</span>
+          <span>После регистрации подтверди email. Письмо иногда попадает в «Спам». Google — без подтверждения.</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="auth-success" id="authSuccessView">
+      <div class="auth-success-icon">✉️</div>
+      <h2>Письмо отправлено</h2>
+      <p>Письмо с подтверждением отправлено на<br><span class="auth-email-highlight" id="authSuccessEmail"></span></p>
+      <div class="auth-spam"><b>Не забудь проверить «Спам»</b><br>Если письма нет во «Входящих», проверь «Спам», «Нежелательная почта» и поиск по адресу <b>stormsurf@msgwing.com</b>.</div>
+      <div class="auth-countdown" id="authCountdown">Повторная отправка будет доступна через 5:00</div>
+      <div class="auth-success-actions">
+        <button class="primary" id="authResendBtn" disabled>Подождать 5:00</button>
+        <button class="ghost" id="authSuccessClose">Закрыть</button>
+      </div>
+      <button class="ghost auth-close-link" id="authSuccessLogin">Я уже подтвердил email — войти</button>
+    </div>
+
+    <div class="password-reset-view" id="passwordResetView">
+      <div id="passwordResetForm">
+        <div class="password-reset-icon">🔑</div>
+        <h2>Новый пароль</h2>
+        <p class="reset-subtitle">Ссылка из письма подтверждена. Придумай новый пароль для своего аккаунта.</p>
+        <label for="newPassword">Новый пароль</label>
+        <div class="auth-field">
+          <input type="password" id="newPassword" autocomplete="new-password" placeholder="Минимум 6 символов">
+          <span class="auth-field-icon">🔒</span>
+        </div>
+        <label for="newPassword2">Повтори новый пароль</label>
+        <div class="auth-field">
+          <input type="password" id="newPassword2" autocomplete="new-password" placeholder="Повтори пароль">
+          <span class="auth-field-icon">🔒</span>
+        </div>
+        <div class="password-reset-error" id="passwordResetError"></div>
+        <div class="sheet-actions">
+          <button class="ghost" id="passwordResetCancel">Отмена</button>
+          <button class="primary" id="passwordResetSave">Сохранить пароль</button>
+        </div>
+      </div>
+      <div class="password-reset-success" id="passwordResetSuccess">
+        <div class="password-reset-icon">✅</div>
+        <h3>Пароль изменён</h3>
+        <p>Теперь войди в аккаунт с новым паролем.</p>
+        <div class="sheet-actions" style="margin-top:18px;">
+          <button class="primary" id="passwordResetLogin">Войти</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Profile sheet -->
+<div class="overlay" id="profileOverlay">
+  <div class="sheet">
+    <h2>Твой профиль</h2>
+    <label for="nickInput">Никнейм</label>
+    <input type="text" id="nickInput" placeholder="Например, Кот_из_9Б" maxlength="24">
+    <p class="hint" id="profileEmailHint"></p>
+    <p class="hint">Этот ник будут видеть другие рядом с твоими объявлениями.</p>
+    <div class="sheet-actions">
+      <button class="ghost" id="profileCancel">Отмена</button>
+      <button class="primary" id="profileSave">Сохранить</button>
+    </div>
+    <button class="ghost" id="profileLogout" style="width:100%;margin-top:8px;color:#ff6b7a;">Выйти из аккаунта</button>
+  </div>
+</div>
+
+<!-- New listing sheet -->
+<div class="overlay" id="addOverlay">
+  <div class="sheet">
+    <h2>Новое объявление</h2>
+    <label>Фото товара</label>
+    <div class="photo-drop" id="photoDrop">
+      <span id="photoDropText">Нажми, чтобы выбрать фото</span>
+    </div>
+    <input type="file" id="photoInput" accept="image/*">
+
+    <label for="titleInput">Название товара</label>
+    <input type="text" id="titleInput" placeholder="Например, Наушники JBL" maxlength="60">
+
+    <label for="descInput">Описание</label>
+    <textarea id="descInput" placeholder="Состояние, особенности, почему отдаёшь"></textarea>
+
+    <label for="wantInput">На что меняешь</label>
+    <input type="text" id="wantInput" placeholder="Например, на настольную игру или комиксы" maxlength="80">
+
+    <label for="categoryInput">Раздел</label>
+    <select id="categoryInput" style="width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;background:var(--card);color:var(--ink);font-family:'PT Sans',sans-serif;font-size:14px;">
+      <option value="meme"> Мемы — максимум 1 объявление</option>
+      <option value="virtual"> Виртуальные — максимум 2</option>
+      <option value="real" selected> Реальные — максимум 2</option>
+    </select>
+    <p class="hint" id="categoryLimitHint">На одном аккаунте можно иметь не более 2 реальных объявлений.</p>
+
+    <div class="sheet-actions">
+      <button class="ghost" id="addCancel">Отмена</button>
+      <button class="primary" id="addSave">Разместить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Moderation sheet -->
+<div class="overlay" id="moderationOverlay">
+  <div class="sheet" style="max-width:520px;">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;">
+      <h2 style="margin:0;">🛡️ Модерация</h2>
+      <button class="ghost" id="moderationCancel">Отмена</button>
+    </div>
+    <p style="margin:10px 0 0;color:var(--ink-soft);font-size:13px;line-height:1.45;">Выбери причину удаления объявления. Действие будет записано в журнале модерации.</p>
+    <div class="moderation-reasons">
+      <button class="moderation-reason" data-reason="Запрещённый контент">🚫 Запрещённый контент</button>
+      <button class="moderation-reason" data-reason="Контент не по возрасту">🔞 Контент не по возрасту</button>
+      <button class="moderation-reason" data-reason="Оскорбления">🗣 Оскорбления</button>
+      <button class="moderation-reason" data-reason="Мошенничество">🧑‍💻 Мошенничество</button>
+      <button class="moderation-reason" data-reason="Спам">📢 Спам</button>
+      <button class="moderation-reason" data-reason="Другое">❓ Другое</button>
+    </div>
+    <p class="moderation-note">Объявление будет удалено для всех пользователей. Фото также будет удалено из хранилища.</p>
+    <div class="auth-error" id="moderationError" style="margin-top:10px;"></div>
+  </div>
+</div>
+
+<!-- Listing detail sheet (Avito-style) -->
+<div class="overlay" id="detailOverlay">
+  <div class="sheet detail-sheet" style="position:relative;">
+    <div id="detailPhotoWrap"></div>
+    <div class="detail-body">
+      <h2 id="detailTitle"></h2>
+      <div class="detail-badges">
+        <span class="category-badge" id="detailCategory"></span>
+        <span class="want" id="detailWant"></span>
+      </div>
+
+      <p class="full-desc" id="detailDesc"></p>
+
+      <div class="detail-author detail-row">
+        <div class="avatar detail-avatar" id="detailAvatar"></div>
+        <div class="detail-author-copy">
+          <span class="detail-label">Автор</span>
+          <strong id="detailAuthor"></strong>
+        </div>
+        <span class="detail-chevron">›</span>
+      </div>
+
+      <div class="detail-info">
+        <div class="detail-info-title">Информация</div>
+        <div class="detail-info-row">
+          <span><i>◈</i> Категория</span>
+          <strong id="detailInfoCategory"></strong>
+        </div>
+        <div class="detail-info-row">
+          <span><i>⇄</i> Обмен на</span>
+          <strong id="detailInfoWant"></strong>
+        </div>
+        <div class="detail-info-row">
+          <span><i>◷</i> Опубликовано</span>
+          <strong id="detailInfoDate"></strong>
+        </div>
+      </div>
+
+      <div class="detail-actions">
+        <button class="primary detail-chat-btn" id="detailChatBtn">Открыть чат <span>→</span></button>
+        <button class="detail-close-btn" id="detailCloseBottom"><span>×</span> Закрыть</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- Author listings -->
+<div class="overlay" id="authorListingsOverlay">
+  <div class="sheet author-listings-sheet">
+    <div class="author-listings-top">
+      <div>
+        <span class="detail-label">Профиль автора</span>
+        <h2 id="authorListingsTitle">Объявления автора</h2>
+        <p id="authorListingsMeta">0 объявлений</p>
+      </div>
+      <div class="author-listings-top-spacer" aria-hidden="true"></div>
+    </div>
+    <div class="author-listings-grid" id="authorListingsGrid"></div>
+    <button class="detail-close-btn author-listings-bottom-close" id="authorListingsCloseBottom">
+      <span>×</span> Закрыть
+    </button>
+  </div>
+</div>
+
+<!-- Chats list -->
+<div class="overlay" id="chatsOverlay">
+  <div class="sheet chat-list-sheet">
+    <div class="chat-list-top">
+      <div class="chat-list-topline">
+        <h2 class="chat-list-heading"> Чаты <span class="chat-unread-count" id="chatUnreadCount"></span></h2>
+        <button class="ghost" id="chatsClose">Закрыть</button>
+      </div>
+      <div class="chat-search">
+        <span>⌕</span>
+        <input type="text" id="chatSearchInput" placeholder="Поиск по чатам..." autocomplete="off">
+      </div>
+    </div>
+    <div class="chat-list" id="chatList"></div>
+  </div>
+</div>
+
+<!-- Chat sheet -->
+<div class="overlay" id="chatOverlay">
+  <div class="sheet chat-sheet">
+    <div class="chat-topbar">
+      <button class="chat-back" id="chatClose" aria-label="Назад">‹</button>
+      <div class="chat-person-avatar" id="chatAvatar">?</div>
+      <div class="chat-top-info">
+        <div class="chat-top-name" id="chatHeader">Чат</div>
+        <div class="chat-top-sub" id="chatSubheader">Объявление</div>
+      </div>
+      <button class="chat-listing-mini" id="chatListingMini" type="button" aria-label="Открыть объявление">
+        <span id="chatListingMiniPhoto"></span>
+        <span class="chat-listing-mini-text"><b id="chatListingMiniTitle">Объявление</b><span id="chatListingMiniWant"></span></span>
+      </button>
+      <button class="chat-exit" id="chatExit" type="button" aria-label="Закрыть чат"></button>
+    </div>
+    <div class="chat-messages" id="chatMessages"></div>
+    <div class="chat-input-wrap">
+      <div class="chat-input-row">
+        <textarea id="chatInput" rows="1" maxlength="1000" placeholder="Написать сообщение..."></textarea>
+        <button class="chat-send" id="chatSend" aria-label="Отправить">➤</button>
+      </div>
+      <div class="chat-input-hint">Enter — отправить · Shift+Enter — новая строка</div>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+/* ===== Supabase ===== */
+const SUPABASE_URL = "https://cnlcaeqrdvbcsecniaig.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_V7JeROrWTj3Xm3E3LXFW_w_vwQ1P9ZF";
+const { createClient } = supabase;
+const sb = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const STORAGE_BUCKET = "listing-photos";
+
+let authUser = null;
+let listings = [];
+let nickname = "";
+let isModerator = false;
+let pendingModerationListingId = null;
+let pendingPhoto = null;
+let currentListingId = null;
+let activeCategory = "all";
+let onlineChannel = null;
+const onlinePresenceKey = (globalThis.crypto && crypto.randomUUID)
+  ? crypto.randomUUID()
+  : "guest-" + Date.now() + "-" + Math.random().toString(36).slice(2);
+const CATEGORY_LIMITS = { meme: 1, virtual: 2, real: 2 };
+const CATEGORY_NAMES = { meme: "мемов", virtual: "виртуальных", real: "реальных" };
+const CATEGORY_LABELS = { meme: " Мем", virtual: " Виртуальное", real: " Реальное" };
+
+async function restoreSession(){
+  const { data, error } = await sb.auth.getSession();
+  if(error) throw error;
+  authUser = data?.session?.user || null;
+  return authUser;
+}
+
+async function loadModeratorStatus(){
+  isModerator=false;
+  if(!authUser || !isEmailConfirmed()) return;
+  const { data, error } = await sb.rpc("is_moderator");
+  if(error){ console.warn("Не удалось проверить права модератора:", error); return; }
+  isModerator = data === true;
+}
+
+let myActiveBan=null;
+let adminUsers=[];
+let adminSelectedUser=null;
+let adminBanType="full";
+let adminBanDuration="permanent";
+
+function formatBanUntil(until){
+  if(!until) return "навсегда";
+  const d=new Date(until);
+  return d.toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"});
+}
+function banTypeLabel(type){ return type==="full" ? "полную" : "не полную"; }
+function isBanActive(b){
+  if(!b) return false;
+  // В admin_list_users для пользователя без блокировки поля блокировки
+  // должны приходить NULL. Не считаем такую строку вечной блокировкой.
+  const type=String(b.ban_type||"").toLowerCase();
+  if(type!=="full" && type!=="partial") return false;
+  if(!b.starts_at) return false;
+  const start=new Date(b.starts_at).getTime();
+  if(!Number.isFinite(start)) return false;
+  const now=Date.now();
+  const end=b.ends_at ? new Date(b.ends_at).getTime() : null;
+  return start<=now && (end===null || (Number.isFinite(end) && end>now));
+}
+async function loadMyBan(){
+  myActiveBan=null;
+  if(!authUser) return null;
+  const {data,error}=await sb.rpc("get_my_active_ban");
+  if(error){ console.warn("Не удалось проверить блокировку:",error); return null; }
+  myActiveBan=data?.[0]||data||null;
+  if(Array.isArray(myActiveBan)) myActiveBan=myActiveBan[0]||null;
+  return myActiveBan;
+}
+function showBanNotice(b){
+  const title=document.getElementById("banNoticeTitle");
+  const text=document.getElementById("banNoticeText");
+  const time=document.getElementById("banNoticeTime");
+  const notice=document.getElementById("banNoticeOverlay");
+  if(!notice) return;
+
+  // Сообщение о блокировке должно быть видно сразу, даже если сейчас открыта форма входа.
+  // Закрываем auth-sheet и поднимаем ban notice на самый верх.
+  authOverlay?.classList.remove("open");
+  authGateOverlay?.classList.remove("open");
+  notice.style.zIndex="1000000";
+
+  const full=b.ban_type==="full";
+  title.textContent=`Ваш аккаунт получил ${banTypeLabel(b.ban_type)} блокировку`;
+  text.textContent=full
+    ? "Доступ к аккаунту заблокирован. Полная блокировка также запрещает использовать этот email для новой регистрации в этом приложении."
+    : "Вы можете входить в аккаунт, смотреть объявления и писать пользователям, но публикация новых объявлений отключена.";
+  time.textContent=b.ends_at ? `Срок блокировки: до ${formatBanUntil(b.ends_at)}` : "Срок блокировки: навсегда";
+  notice.classList.add("open");
+  notice.setAttribute("aria-hidden","false");
+}
+async function handleCurrentUserBan(){
+  const b=await loadMyBan();
+  if(!b || !isBanActive(b)) return false;
+  showBanNotice(b);
+  if(b.ban_type==="full") return true;
+  return false;
+}
+
+// Проверяет блокировку непосредственно перед действием.
+// Это важно: бан мог быть выдан уже после входа в аккаунт, поэтому нельзя
+// сначала требовать никнейм/открывать форму, а только потом узнавать о бане.
+async function blockBannedAction(action){
+  const b=await loadMyBan();
+  if(!b || !isBanActive(b)) return false;
+
+  showBanNotice(b);
+
+  // Полная блокировка запрещает любое действие. Завершаем текущую сессию.
+  if(b.ban_type==="full"){
+    await sb.auth.signOut();
+    authUser=null;
+    // Никнейм не удаляем: блокировка не должна сбрасывать профиль.
+    isModerator=false;
+    myActiveBan=null;
+    updateAuthUI();
+    renderProfile();
+  }
+
+  // Не полная блокировка запрещает только публикацию.
+  if(action==="publish") return true;
+
+  // Для отправки сообщений partial-ban разрешён, full-ban уже остановлен выше.
+  return b.ban_type==="full";
+}
+function updateAdminUI(){
+  const btn=document.getElementById("openAdminBtn");
+  if(btn) btn.classList.toggle("is-visible",!!(isModerator && authUser));
+}
+
+function isEmailConfirmed(){
+  return !!(authUser && authUser.email_confirmed_at);
+}
+
+function requireAuth(actionText){
+  if(isEmailConfirmed()) return true;
+
+  // Если пользователь вообще не вошёл — показываем отдельное
+  // понятное окно, а не открываем форму авторизации сразу.
+  if(!authUser){
+    const text=document.getElementById("authGateText");
+    if(text){
+      text.textContent = actionText
+        ? `Чтобы ${actionText}, войди в аккаунт или зарегистрируйся.`
+        : "Войдите или зарегистрируйтесь, чтобы продолжить.";
+    }
+    const gate=document.getElementById("authGateOverlay");
+    gate.classList.add("open");
+    gate.setAttribute("aria-hidden","false");
+    return false;
+  }
+
+  // Пользователь есть, но email ещё не подтверждён.
+  openAuth("login");
+  document.getElementById("authError").textContent="Сначала подтверди email по ссылке из письма.";
+  return false;
+}
+
+function updateAuthUI(){
+  const profileChip=document.getElementById("profileChip");
+  const chatsBtn=document.getElementById("openChatsBtn");
+  const chatLabel=chatsBtn?.querySelector("span:last-child");
+  if(authUser){
+    if(chatLabel) chatLabel.textContent="Чаты"; else chatsBtn.textContent="Чаты";
+    document.getElementById("nickLabel").textContent=nickname || "Задать ник";
+  }else{
+    if(chatLabel) chatLabel.textContent="Войти"; else chatsBtn.textContent="Войти";
+    document.getElementById("nickLabel").textContent="Войти";
+    document.getElementById("avatarLetter").textContent="→";
+  }
+  updateAdminUI();
+}
+
+let authMode="login";
+const authOverlay=document.getElementById("authOverlay");
+const authGateOverlay=document.getElementById("authGateOverlay");
+
+document.getElementById("authGateClose").addEventListener("click",()=>{
+  authGateOverlay.classList.remove("open");
+  authGateOverlay.setAttribute("aria-hidden","true");
+});
+const AUTH_COOLDOWN_MS=5*60*1000;
+const AUTH_COOLDOWN_KEY="exchange101_signup_cooldowns_v1";
+let authCooldownTimer=null;
+let pendingSignupEmail="";
+
+function getCooldowns(){
+  try{return JSON.parse(localStorage.getItem(AUTH_COOLDOWN_KEY)||"{}");}
+  catch{return {};}
+}
+function setCooldown(email){
+  const key=email.trim().toLowerCase();
+  const data=getCooldowns();
+  data[key]=Date.now()+AUTH_COOLDOWN_MS;
+  localStorage.setItem(AUTH_COOLDOWN_KEY,JSON.stringify(data));
+}
+function getCooldownUntil(email){
+  const key=email.trim().toLowerCase();
+  const until=Number(getCooldowns()[key]||0);
+  return until>Date.now()?until:0;
+}
+function formatCountdown(ms){
+  const total=Math.max(0,Math.ceil(ms/1000));
+  const m=Math.floor(total/60);
+  const sec=String(total%60).padStart(2,"0");
+  return `${m}:${sec}`;
+}
+function stopAuthCountdown(){
+  if(authCooldownTimer){clearInterval(authCooldownTimer);authCooldownTimer=null;}
+}
+function startAuthCountdown(email){
+  stopAuthCountdown();
+  const btn=document.getElementById("authResendBtn");
+  const label=document.getElementById("authCountdown");
+  const tick=()=>{
+    const until=getCooldownUntil(email);
+    if(!until){
+      btn.disabled=false;
+      btn.classList.remove("auth-locked");
+      btn.textContent="Отправить ещё раз";
+      label.textContent="Можно запросить письмо повторно.";
+      stopAuthCountdown();
+      return;
+    }
+    btn.disabled=true;
+    btn.classList.add("auth-locked");
+    btn.textContent=`Подождать ${formatCountdown(until-Date.now())}`;
+    label.textContent=`Повторная отправка будет доступна через ${formatCountdown(until-Date.now())}`;
+  };
+  tick();
+  authCooldownTimer=setInterval(tick,1000);
+}
+
+let __overlayScrollY = 0;
+function lockPageScroll(){
+  if(document.body.classList.contains("overlay-open")) return;
+  __overlayScrollY = window.scrollY || window.pageYOffset || 0;
+  document.documentElement.classList.add("overlay-open");
+  document.body.classList.add("overlay-open");
+  document.body.style.top = `-${__overlayScrollY}px`;
+}
+function unlockPageScroll(){
+  // Keep locked if another overlay is still open
+  const stillOpen = ["authOverlay","profileOverlay","addOverlay","moderationOverlay","banOverlay","adminOverlay","banNoticeOverlay"]
+    .some(id => document.getElementById(id)?.classList.contains("open"));
+  if(stillOpen) return;
+  document.documentElement.classList.remove("overlay-open");
+  document.body.classList.remove("overlay-open");
+  document.body.style.top = "";
+  window.scrollTo(0, __overlayScrollY);
+}
+
+function showAuthForm(mode="login"){
+  authMode=mode;
+  stopAuthCountdown();
+  restoreGoogleButton();
+  document.getElementById("passwordResetView").classList.remove("open");
+  document.getElementById("passwordResetForm").style.display="block";
+  document.getElementById("passwordResetSuccess").classList.remove("open");
+  document.getElementById("authFormView").style.display="block";
+  document.getElementById("authSuccessView").classList.remove("open");
+  document.getElementById("authTitle").textContent=mode==="register"?"Создание аккаунта":"С возвращением";
+  document.getElementById("authSubtitle").textContent=mode==="register"
+    ?"Зарегистрируйся по email — это займёт меньше минуты."
+    :"Войди в аккаунт, чтобы общаться и размещать объявления.";
+  document.getElementById("authSubmit").textContent=mode==="register"?"Зарегистрироваться":"Войти";
+  document.getElementById("authReset").style.display=mode==="login"?"block":"none";
+  document.getElementById("authError").textContent="";
+  document.getElementById("authLoginTab").classList.toggle("active",mode==="login");
+  document.getElementById("authRegisterTab").classList.toggle("active",mode==="register");
+  document.getElementById("authLoginTab").setAttribute("aria-selected", mode==="login" ? "true" : "false");
+  document.getElementById("authRegisterTab").setAttribute("aria-selected", mode==="register" ? "true" : "false");
+  const tabsEl=document.querySelector(".auth-tabs");
+  if(tabsEl) tabsEl.dataset.mode = mode;
+}
+function openAuth(mode="login"){showAuthForm(mode);restoreGoogleButton();authOverlay.classList.add("open");lockPageScroll();}
+function showSignupSuccess(email){
+  pendingSignupEmail=email.trim();
+  document.getElementById("authFormView").style.display="none";
+  document.getElementById("authSuccessView").classList.add("open");
+  document.getElementById("authSuccessEmail").textContent=pendingSignupEmail;
+  startAuthCountdown(pendingSignupEmail);
+}
+
+document.getElementById("authLoginTab").addEventListener("click",()=>showAuthForm("login"));
+document.getElementById("authRegisterTab").addEventListener("click",()=>showAuthForm("register"));
+function closeAuthSheet(){authOverlay.classList.remove("open");unlockPageScroll();}
+document.getElementById("authCancel").addEventListener("click",closeAuthSheet);
+
+document.getElementById("authSuccessClose").addEventListener("click",()=>{stopAuthCountdown();authOverlay.classList.remove("open");unlockPageScroll();});
+document.getElementById("authSuccessLogin").addEventListener("click",()=>showAuthForm("login"));
+
+function getAuthRedirectUrl(){
+  // Возвращаем пользователя ровно на ту страницу, с которой начался вход.
+  // Для Supabase этот URL должен быть добавлен в Authentication → URL Configuration.
+  if(location.protocol === "file:") return "";
+  return `${location.origin}${location.pathname}`;
+}
+
+function googleBtnHTML(){
+  return `<svg class="google-logo" viewBox="0 0 24 24" aria-hidden="true">
+    <path fill="#4285F4" d="M21.35 12.23c0-.79-.07-1.55-.2-2.27H12v4.3h5.24a4.48 4.48 0 0 1-1.94 2.94v2.45h3.14c1.84-1.69 2.91-4.18 2.91-7.42z"/>
+    <path fill="#34A853" d="M12 21.6c2.63 0 4.84-.87 6.45-2.35l-3.14-2.45c-.87.58-1.98.93-3.31.93-2.54 0-4.69-1.72-5.46-4.03H3.3v2.53A9.74 9.74 0 0 0 12 21.6z"/>
+    <path fill="#FBBC05" d="M6.54 13.7a5.85 5.85 0 0 1 0-3.4V7.77H3.3a9.75 9.75 0 0 0 0 8.46l3.24-2.53z"/>
+    <path fill="#EA4335" d="M12 6.27c1.43 0 2.72.49 3.73 1.46l2.8-2.8C16.84 3.34 14.63 2.4 12 2.4a9.74 9.74 0 0 0-8.7 5.37l3.24 2.53C7.31 7.99 9.46 6.27 12 6.27z"/>
+  </svg><span class="google-auth-label">Продолжить с Google</span>`;
+}
+function restoreGoogleButton(){
+  let btn=document.getElementById("googleAuthBtn");
+  // If button was removed from DOM somehow, recreate it before the email divider.
+  if(!btn){
+    const body=document.querySelector("#authFormView .auth-body");
+    const divider=body && body.querySelector(".auth-divider");
+    if(body){
+      btn=document.createElement("button");
+      btn.type="button";
+      btn.className="google-auth-btn";
+      btn.id="googleAuthBtn";
+      btn.setAttribute("aria-label","Войти через Google");
+      if(divider) body.insertBefore(btn, divider);
+      else{
+        const tabs=body.querySelector(".auth-tabs");
+        if(tabs && tabs.nextSibling) body.insertBefore(btn, tabs.nextSibling);
+        else body.prepend(btn);
+      }
+    }else{
+      return;
+    }
+  }
+  btn.disabled=false;
+  btn.hidden=false;
+  btn.removeAttribute("hidden");
+  btn.style.cssText="display:flex !important; visibility:visible !important; opacity:1 !important; background:linear-gradient(180deg,#1a2430 0%, #121a22 100%) !important; color:#edf3f7 !important; -webkit-text-fill-color:#edf3f7 !important; border:1px solid rgba(255,255,255,.14) !important;";
+  btn.classList.remove("auth-locked");
+  btn.innerHTML=googleBtnHTML();
+  const label = btn.querySelector(".google-auth-label, span");
+  if(label){
+    label.style.color = "#edf3f7";
+    label.style.webkitTextFillColor = "#edf3f7";
+    label.style.fontWeight = "800";
+  }
+}
+
+async function signInWithGoogle(){
+  const btn=document.getElementById("googleAuthBtn");
+  const err=document.getElementById("authError");
+  if(err) err.textContent="";
+  if(location.protocol === "file:"){
+    if(err) err.textContent="Google-вход не работает при открытии HTML напрямую как file://. Размести сайт на HTTPS-домене и добавь этот адрес в Supabase.";
+    return;
+  }
+  if(btn){
+    btn.disabled=true;
+    const label=btn.querySelector(".google-auth-label");
+    if(label) label.textContent="Переходим к Google…";
+    else btn.innerHTML=googleBtnHTML().replace("Войти через Google","Переходим к Google…");
+  }
+  try{
+    const redirectTo=getAuthRedirectUrl();
+    const {error}=await sb.auth.signInWithOAuth({
+      provider:"google",
+      options:{
+        redirectTo,
+        queryParams:{prompt:"select_account"}
+      }
+    });
+    if(error) throw error;
+    // OAuth redirects away; if it somehow returns without redirect, restore button.
+    setTimeout(restoreGoogleButton, 2500);
+  }catch(e){
+    if(err) err.textContent=e.message||"Не удалось открыть вход через Google.";
+    restoreGoogleButton();
+  }
+}
+// Event delegation — listener never dies even if button is recreated
+document.addEventListener("click",function(e){
+  const btn=e.target && e.target.closest && e.target.closest("#googleAuthBtn");
+  if(btn){ e.preventDefault(); signInWithGoogle(); }
+});
+
+function showOAuthCallbackError(){
+  const params=new URLSearchParams(location.search);
+  const hash=new URLSearchParams(location.hash.replace(/^#/,""));
+  const error=params.get("error_description")||params.get("error")||hash.get("error_description")||hash.get("error");
+  if(!error) return;
+  const readable=decodeURIComponent(String(error).replace(/\+/g," "));
+  const err=document.getElementById("authError");
+  if(err){
+    openAuth("login");
+    err.textContent=readable;
+  }
+  // Убираем OAuth-параметры из адресной строки после показа ошибки.
+  try{history.replaceState({},document.title,`${location.origin}${location.pathname}`);}catch(e){}
+}
+showOAuthCallbackError();
+
+let authSubmitBusy=false;
+document.getElementById("authSubmit").addEventListener("click",async()=>{
+  if(authSubmitBusy) return;
+  const email=document.getElementById("authEmail").value.trim();
+  const password=document.getElementById("authPassword").value;
+  const err=document.getElementById("authError");
+  err.textContent="";
+  if(!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){err.textContent="Введи корректный email, например name@mail.ru";return;}
+  if(password.length<6){err.textContent="Пароль должен быть не короче 6 символов.";return;}
+  const btn=document.getElementById("authSubmit");
+  if(authMode==="register"){
+    const until=getCooldownUntil(email);
+    if(until){err.textContent=`Для этого email уже был запрос. Повторить можно через ${formatCountdown(until-Date.now())}.`;return;}
+  }
+  authSubmitBusy=true;
+  const prevLabel=btn.textContent;
+  btn.disabled=true;
+  btn.setAttribute("aria-busy","true");
+  btn.innerHTML='<span class="btn-spinner" aria-hidden="true"></span>'+(authMode==="register"?"Загрузка…":"Загрузка…");
+  try{
+    if(authMode==="register"){
+      const {data:bannedEmail,error:banCheckError}=await sb.rpc("is_email_full_banned",{p_email:email});
+      if(banCheckError) throw banCheckError;
+      if(bannedEmail===true) throw new Error("Этот email заблокирован и не может использоваться для новой регистрации.");
+      const {data,error}=await sb.auth.signUp({email,password,options:{emailRedirectTo:`${location.origin}${location.pathname}`}});
+      if(error) throw error;
+      setCooldown(email);
+      if(data?.session?.user){
+        authUser=data.session.user;
+        await loadProfile();
+        authOverlay.classList.remove("open"); unlockPageScroll();
+        updateAuthUI();renderProfile();renderListings();
+        promptNicknameIfNeeded();
+      }else{showSignupSuccess(email);}
+    }else{
+      const {data,error}=await sb.auth.signInWithPassword({email,password});
+      if(error) throw error;
+      authUser=data.user;
+      if(!isEmailConfirmed()) throw new Error("Email ещё не подтверждён. Открой письмо и перейди по ссылке подтверждения.");
+
+      // Критично: проверяем полный бан ДО загрузки профиля/никнейма.
+      // Даже если RPC get_my_active_ban отработал с задержкой, отдельная
+      // проверка по email не позволит заблокированному аккаунту продолжить вход.
+      let activeBan=await loadMyBan();
+      let fullBanFallback=false;
+      if(!activeBan || !isBanActive(activeBan)){
+        const {data:emailBanned,error:emailBanError}=await sb.rpc("is_email_full_banned",{p_email:email});
+        if(!emailBanError && emailBanned===true) fullBanFallback=true;
+      }
+
+      if((activeBan && isBanActive(activeBan) && String(activeBan.ban_type).toLowerCase()==="full") || fullBanFallback){
+        // Полный бан = вход запрещён. Не загружаем профиль и не требуем никнейм.
+        showBanNotice(activeBan && isBanActive(activeBan) ? activeBan : {ban_type:"full",starts_at:new Date().toISOString(),ends_at:null});
+        authUser=null; isModerator=false; myActiveBan=null;
+        await sb.auth.signOut();
+        updateAuthUI(); renderProfile(); renderListings();
+        return;
+      }
+
+      if(activeBan && isBanActive(activeBan)) showBanNotice(activeBan);
+      await loadProfile();
+      authOverlay.classList.remove("open"); unlockPageScroll();
+      updateAuthUI();renderProfile();renderListings();
+      promptNicknameIfNeeded();
+    }
+  }catch(e){err.textContent=e.message||"Не удалось выполнить действие.";}
+  finally{
+    authSubmitBusy=false;
+    btn.disabled=false;
+    btn.removeAttribute("aria-busy");
+    btn.textContent=authMode==="register"?"Зарегистрироваться":"Войти";
+  }
+});
+
+document.getElementById("authResendBtn").addEventListener("click",async()=>{
+  const email=pendingSignupEmail.trim();
+  if(!email||getCooldownUntil(email))return;
+  const btn=document.getElementById("authResendBtn");btn.disabled=true;
+  try{
+    const {error}=await sb.auth.resend({type:"signup",email,options:{emailRedirectTo:`${location.origin}${location.pathname}`}});
+    if(error)throw error;
+    setCooldown(email);startAuthCountdown(email);
+  }catch(e){document.getElementById("authCountdown").textContent=e.message||"Не удалось отправить письмо повторно.";startAuthCountdown(email);}
+});
+
+document.getElementById("authReset").addEventListener("click",async()=>{
+  const email=document.getElementById("authEmail").value.trim();
+  const err=document.getElementById("authError");
+  if(!email){err.textContent="Сначала введи email.";return;}
+  const btn=document.getElementById("authReset");
+  btn.disabled=true;
+  try{
+    const redirectTo=`${location.origin}${location.pathname}`;
+    const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo});
+    if(error) throw error;
+    err.textContent="Письмо для восстановления отправлено. Проверь «Входящие» и «Спам».";
+  }catch(e){
+    err.textContent=e.message||"Не удалось отправить письмо для восстановления.";
+  }finally{btn.disabled=false;}
+});
+
+function showPasswordResetView(){
+  stopAuthCountdown();
+  document.getElementById("authFormView").style.display="none";
+  document.getElementById("authSuccessView").classList.remove("open");
+  document.getElementById("passwordResetView").classList.add("open");
+  document.getElementById("passwordResetForm").style.display="block";
+  document.getElementById("passwordResetSuccess").classList.remove("open");
+  document.getElementById("passwordResetError").textContent="";
+  document.getElementById("newPassword").value="";
+  document.getElementById("newPassword2").value="";
+  authOverlay.classList.add("open");
+}
+
+document.getElementById("passwordResetCancel").addEventListener("click",async()=>{
+  await sb.auth.signOut();
+  document.getElementById("passwordResetView").classList.remove("open");
+  showAuthForm("login");
+});
+
+document.getElementById("passwordResetSave").addEventListener("click",async()=>{
+  const p1=document.getElementById("newPassword").value;
+  const p2=document.getElementById("newPassword2").value;
+  const err=document.getElementById("passwordResetError");
+  const btn=document.getElementById("passwordResetSave");
+  err.textContent="";
+  if(p1.length<6){err.textContent="Пароль должен быть не короче 6 символов.";return;}
+  if(p1!==p2){err.textContent="Пароли не совпадают.";return;}
+  btn.disabled=true;
+  try{
+    const {error}=await sb.auth.updateUser({password:p1});
+    if(error) throw error;
+    // После сброса пароля завершаем recovery-сессию: пользователю нужно войти заново.
+    await sb.auth.signOut();
+    authUser=null; nickname=""; isModerator=false; updateAuthUI(); renderProfile();
+    document.getElementById("passwordResetForm").style.display="none";
+    document.getElementById("passwordResetSuccess").classList.add("open");
+  }catch(e){err.textContent=e.message||"Не удалось изменить пароль. Возможно, ссылка уже истекла — запроси письмо ещё раз.";}
+  finally{btn.disabled=false;}
+});
+
+document.getElementById("passwordResetLogin").addEventListener("click",()=>{
+  document.getElementById("passwordResetView").classList.remove("open");
+  showAuthForm("login");
+});
+
+sb.auth.onAuthStateChange(async(_event,session)=>{
+  authUser=session?.user||null;
+  await loadModeratorStatus();
+  if(_event==="PASSWORD_RECOVERY"){
+    showPasswordResetView();
+    return;
+  }
+  if(authUser){
+    // Сначала бан, потом профиль. Иначе при полном бане успевает открыться
+    // профиль с кнопкой «Задать ник», хотя вход должен быть запрещён.
+    const activeBan=await loadMyBan();
+    if(activeBan && isBanActive(activeBan)){
+      myActiveBan=activeBan;
+      showBanNotice(activeBan);
+      if(String(activeBan.ban_type).toLowerCase()==="full"){
+        authUser=null; isModerator=false; myActiveBan=null;
+        await sb.auth.signOut();
+        updateAuthUI(); renderProfile(); renderListings();
+        return;
+      }
+    }
+    try{await loadProfile();}catch(e){console.error(e);}
+  }else{nickname="";myActiveBan=null; restoreGoogleButton();}
+  updateAuthUI();renderProfile();renderListings();
+  if(authUser) promptNicknameIfNeeded();
+  if(onlineChannel){
+    try{
+      await onlineChannel.track({
+        session_id:onlinePresenceKey,
+        user_id:authUser?.id || null,
+        joined_at:new Date().toISOString()
+      });
+      updateOnlineCount();
+    }catch(e){}
+  }
+  if(authUser) refreshChatUnreadSilently();
+});
+
+
+function promptNicknameIfNeeded(){
+  if(!authUser || !isEmailConfirmed()) return;
+  if(nickname && String(nickname).trim()) return;
+  // Don't prompt if full ban
+  if(myActiveBan && isBanActive(myActiveBan) && String(myActiveBan.ban_type).toLowerCase()==="full") return;
+  const profileOverlay=document.getElementById("profileOverlay");
+  if(!profileOverlay) return;
+  document.getElementById("nickInput").value="";
+  document.getElementById("profileEmailHint").textContent=authUser?.email
+    ? "Аккаунт: " + authUser.email + " · Придумай никнейм, чтобы другие видели тебя на доске"
+    : "Придумай никнейм, чтобы другие видели тебя на доске";
+  // Soft highlight: title stays, hint explains
+  profileOverlay.classList.add("open");
+  profileOverlay.classList.add("nickname-required");
+  setTimeout(()=>{ try{document.getElementById("nickInput").focus();}catch(e){} }, 80);
+}
+
+async function loadProfile(){
+  // Профиль создаём для обычного email-пользователя. Здесь только читаем его.
+  const { data, error } = await sb.from("profiles")
+    .select("id,nickname")
+    .eq("id", authUser.id)
+    .maybeSingle();
+
+  if(error) throw error;
+
+  // Защита от редкого случая, когда триггер ещё не успел создать строку.
+  if(!data){
+    const { data: created, error: createError } = await sb.from("profiles")
+      .insert({ id: authUser.id, nickname: null })
+      .select("id,nickname")
+      .single();
+    if(createError) throw createError;
+    nickname = created?.nickname || "";
+    return;
+  }
+
+  nickname = data.nickname || "";
+}
+
+async function saveProfile(nick){
+  const { data, error } = await sb.from("profiles")
+    .update({ nickname: nick })
+    .eq("id", authUser.id)
+    .select("id,nickname")
+    .single();
+
+  if(error) throw error;
+  if(!data) throw new Error("Профиль пользователя не найден");
+  nickname = data.nickname || "";
+}
+
+let listingsInitialLoadDone=false;
+function showInitialMarketLoading(){
+  const grid=document.getElementById("grid");
+  if(!grid || listingsInitialLoadDone) return;
+  grid.innerHTML='<div class="market-loading" style="grid-column:1/-1">подключение к серверу...</div>';
+}
+async function loadListings(){
+  const grid=document.getElementById("grid");
+  if(grid && !listingsInitialLoadDone){
+    showInitialMarketLoading();
+  }
+  const { data, error } = await sb.from("listings").select("id,title,description,want,photo_url,photo_path,author,created_at,user_id,category").order("created_at", { ascending:false });
+  listingsInitialLoadDone=true;
+  if(error) throw error;
+  listings = data || [];
+}
+
+async function compressImage(file){
+  const bitmap = await createImageBitmap(file);
+  const maxSide = 1280;
+  const scale = Math.min(1, maxSide / Math.max(bitmap.width, bitmap.height));
+  const w = Math.max(1, Math.round(bitmap.width * scale));
+  const h = Math.max(1, Math.round(bitmap.height * scale));
+  const canvas = document.createElement("canvas");
+  canvas.width = w; canvas.height = h;
+  const ctx = canvas.getContext("2d", { alpha:false });
+  ctx.drawImage(bitmap, 0, 0, w, h);
+  bitmap.close();
+  return await new Promise((resolve, reject)=>canvas.toBlob(b=>b ? resolve(b) : reject(new Error("Не удалось сжать фото")), "image/jpeg", 0.75));
+}
+
+async function uploadPhoto(file, listingId){
+  const blob = await compressImage(file);
+  const path = `${authUser.id}/${listingId}.jpg`;
+  const { error } = await sb.storage.from(STORAGE_BUCKET).upload(path, blob, { contentType:"image/jpeg", upsert:false });
+  if(error) throw error;
+  const { data } = sb.storage.from(STORAGE_BUCKET).getPublicUrl(path);
+  return { path, url:data.publicUrl };
+}
+
+async function deletePhoto(path){
+  if(!path) return;
+  const { error } = await sb.storage.from(STORAGE_BUCKET).remove([path]);
+  if(error) console.warn("Фото не удалилось из Storage:", error);
+}
+
+function normalizeListing(item){
+  return { ...item, desc:item.description || "", photo:item.photo_url || "", createdAt:item.created_at, category:item.category || "real" };
+}
+
+function renderProfile(){
+  const label=document.getElementById("nickLabel");
+  const letter=document.getElementById("avatarLetter");
+  if(nickname){ label.textContent=nickname; letter.textContent=nickname[0].toUpperCase(); }
+  else { label.textContent="Задать ник"; letter.textContent="?"; }
+}
+
+function renderListings(){
+  const grid=document.getElementById("grid");
+  const counts={
+    all:listings.length,
+    meme:listings.filter(x=>(x.category||"real")==="meme").length,
+    virtual:listings.filter(x=>(x.category||"real")==="virtual").length,
+    real:listings.filter(x=>(x.category||"real")==="real").length
+  };
+  document.getElementById("countAll").textContent=counts.all ? `(${counts.all})` : "";
+  document.getElementById("countMeme").textContent=counts.meme ? `(${counts.meme})` : "";
+  document.getElementById("countVirtual").textContent=counts.virtual ? `(${counts.virtual})` : "";
+  document.getElementById("countReal").textContent=counts.real ? `(${counts.real})` : "";
+  // counts change tab width — nudge the liquid pill
+  requestAnimationFrame(()=>{
+    const active=document.querySelector(".category-tab.active");
+    if(active && typeof moveCategoryPill==="function") moveCategoryPill(active, true);
+  });
+
+  const visible=listings.filter(item=>activeCategory==="all" || (item.category||"real")===activeCategory);
+  if(visible.length===0){
+    const text=activeCategory==="all"
+      ? "Нажми «+», чтобы разместить первое объявление"
+      : "В этом разделе пока нет объявлений";
+    grid.innerHTML=`<div class="empty" style="grid-column:1/-1"><b>Пока пусто</b><span>${text}</span></div>`;
+    return;
+  }
+  grid.innerHTML=visible.map(item=>{
+    const x=normalizeListing(item);
+    const category=x.category;
+    return `<div class="card" data-id="${x.id}">
+      ${x.photo ? `<img class="photo" src="${x.photo}" alt="">` : `<div class="photo-placeholder"></div>`}
+      <div class="body"><span class="category-badge">${CATEGORY_LABELS[category]||CATEGORY_LABELS.real}</span><h3>${escapeHtml(x.title)}</h3>
+      ${x.desc ? `<p class="desc">${escapeHtml(x.desc)}</p>` : ""}
+      <span class="want">⇄ ${escapeHtml(x.want)}</span>
+      <footer><span class="author-link" data-author-id="${x.user_id}" data-author-name="${escapeHtml(x.author)}" style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">${escapeHtml(x.author)}${isModerator && String(x.user_id)!==String(authUser?.id) ? `<span class="moderator-badge">🛡️</span>` : ""}</span><span style="display:flex;align-items:center;gap:6px;">${authUser && String(x.user_id)===String(authUser.id) ? `<button class="del-btn" data-id="${x.id}">Удалить</button>` : ""}${isModerator ? `<button class="moderation-btn" data-id="${x.id}">Удалить</button>` : ""}</span></footer></div></div>`;
+  }).join("");
+  grid.querySelectorAll(".card").forEach(card=>card.addEventListener("click",()=>openDetail(card.dataset.id)));
+  grid.querySelectorAll(".author-link").forEach(link=>link.addEventListener("click",e=>{
+    e.stopPropagation();
+    openAuthorListings(link.dataset.authorId, link.dataset.authorName);
+  }));
+  grid.querySelectorAll(".del-btn").forEach(btn=>btn.addEventListener("click",async e=>{ e.stopPropagation(); await deleteOwnListing(btn.dataset.id); }));
+  grid.querySelectorAll(".moderation-btn").forEach(btn=>btn.addEventListener("click",async e=>{ e.stopPropagation(); openModeration(btn.dataset.id); }));
+}
+function escapeHtml(str){ const d=document.createElement("div"); d.textContent=str ?? ""; return d.innerHTML; }
+
+async function deleteOwnListing(id){
+  const item=listings.find(x=>String(x.id)===String(id));
+  if(!item || !authUser || String(item.user_id)!==String(authUser.id)) return;
+  if(!confirm("Удалить объявление?")) return;
+  const { error }=await sb.from("listings").delete().eq("id",id).eq("user_id",authUser.id);
+  if(error){ alert("Не удалось удалить объявление: "+error.message); return; }
+  await deletePhoto(item.photo_path);
+  listings=listings.filter(x=>String(x.id)!==String(id));
+  renderListings();
+}
+
+const moderationOverlay=document.getElementById("moderationOverlay");
+const moderationError=document.getElementById("moderationError");
+function openModeration(id){
+  if(!isModerator) return;
+  pendingModerationListingId=id;
+  moderationError.textContent="";
+  moderationOverlay.classList.add("open");
+}
+document.getElementById("moderationCancel").addEventListener("click",()=>{ pendingModerationListingId=null; moderationOverlay.classList.remove("open"); });
+document.querySelectorAll(".moderation-reason").forEach(btn=>btn.addEventListener("click",async()=>{
+  const listingId=pendingModerationListingId;
+  const reason=btn.dataset.reason;
+  const item=listings.find(x=>String(x.id)===String(listingId));
+  if(!listingId || !item || !isModerator) return;
+  moderationError.textContent="Удаляем…";
+  document.querySelectorAll(".moderation-reason").forEach(x=>x.disabled=true);
+  try{
+    const { data, error }=await sb.rpc("moderate_delete_listing",{p_listing_id:listingId,p_reason:reason});
+    if(error) throw error;
+    const photoPath=data?.photo_path || item.photo_path;
+    if(photoPath) await deletePhoto(photoPath);
+    listings=listings.filter(x=>String(x.id)!==String(listingId));
+    pendingModerationListingId=null;
+    moderationOverlay.classList.remove("open");
+    renderListings();
+  }catch(e){
+    moderationError.textContent=e.message||"Не удалось удалить объявление.";
+  }finally{
+    document.querySelectorAll(".moderation-reason").forEach(x=>x.disabled=false);
+  }
+}));
+
+function ensureCategoryPill(){
+  const tabs=document.getElementById("categoryTabs");
+  if(!tabs) return null;
+  let pill=tabs.querySelector(".category-tabs-pill");
+  if(!pill){
+    pill=document.createElement("span");
+    pill.className="category-tabs-pill";
+    pill.setAttribute("aria-hidden","true");
+    tabs.insertBefore(pill, tabs.firstChild);
+  }
+  return pill;
+}
+let __pillLeft=0, __pillWidth=0, __pillFlowTimer=null, __pillSettleTimer=null;
+function __pillMetrics(tab){
+  const tabs=document.getElementById("categoryTabs");
+  const tRect=tabs.getBoundingClientRect();
+  const bRect=tab.getBoundingClientRect();
+  const left=(bRect.left - tRect.left) + tabs.scrollLeft;
+  return { left, width:bRect.width };
+}
+function __setPillBox(pill, left, width, withTransition){
+  if(!withTransition){
+    pill.style.transition="none";
+  }
+  pill.style.width=width+"px";
+  pill.style.transform=`translate3d(${left}px,0,0)`;
+  __pillLeft=left;
+  __pillWidth=width;
+  if(!withTransition){
+    void pill.offsetWidth;
+    pill.style.transition="";
+  }
+}
+function moveCategoryPill(tab, animate=true){
+  const tabs=document.getElementById("categoryTabs");
+  const pill=ensureCategoryPill();
+  if(!tabs || !pill || !tab) return;
+  const { left:toLeft, width:toWidth }=__pillMetrics(tab);
+
+  if(!animate || (!__pillWidth && !pill.style.width)){
+    pill.classList.remove("is-flowing","is-settling");
+    __setPillBox(pill, toLeft, toWidth, false);
+    return;
+  }
+
+  const fromLeft=__pillLeft;
+  const fromWidth=__pillWidth || toWidth;
+  const spanLeft=Math.min(fromLeft, toLeft);
+  const spanRight=Math.max(fromLeft+fromWidth, toLeft+toWidth);
+  const stretchWidth=Math.max(toWidth, spanRight - spanLeft);
+  // Extra liquid overshoot so it "pours" past the target a bit
+  const travel=Math.abs(toLeft - fromLeft);
+  const overshoot=Math.min(18, Math.max(8, travel * 0.12));
+  const stretchLeft=spanLeft - overshoot * 0.15;
+  const stretchW=stretchWidth + overshoot * 0.35;
+
+  if(__pillFlowTimer) clearTimeout(__pillFlowTimer);
+  if(__pillSettleTimer) clearTimeout(__pillSettleTimer);
+
+  // Phase 1: instantly form a stretched blob covering old → new
+  pill.classList.remove("is-settling");
+  pill.classList.add("is-flowing");
+  __setPillBox(pill, stretchLeft, stretchW, false);
+
+  // Phase 2: pour into the target tab with elastic easing
+  requestAnimationFrame(()=>{
+    requestAnimationFrame(()=>{
+      pill.classList.add("is-settling");
+      pill.style.transition=
+        "transform .58s cubic-bezier(.14,1.2,.28,1),"+
+        "width .58s cubic-bezier(.14,1.2,.28,1),"+
+        "border-radius .5s ease,"+
+        "filter .4s ease";
+      __setPillBox(pill, toLeft, toWidth, true);
+
+      __pillSettleTimer=setTimeout(()=>{
+        pill.classList.remove("is-flowing");
+        // tiny settle pulse — liquid finding its shape
+        pill.style.transition=
+          "transform .28s cubic-bezier(.2,.9,.3,1),"+
+          "width .28s cubic-bezier(.2,.9,.3,1),"+
+          "border-radius .28s ease,"+
+          "filter .25s ease";
+        pill.style.borderRadius="999px";
+      }, 560);
+    });
+  });
+}
+function setActiveCategory(cat, animate=true){
+  activeCategory=cat;
+  const tabs=[...document.querySelectorAll(".category-tab")];
+  let active=null;
+  tabs.forEach(x=>{
+    const on=x.dataset.category===cat;
+    x.classList.toggle("active", on);
+    if(on) active=x;
+  });
+  if(active) moveCategoryPill(active, animate);
+  renderListings();
+}
+document.querySelectorAll(".category-tab").forEach(tab=>{
+  tab.addEventListener("click",()=>{
+    setActiveCategory(tab.dataset.category, true);
+  });
+});
+window.addEventListener("resize",()=>{
+  const active=document.querySelector(".category-tab.active");
+  if(active) moveCategoryPill(active, false);
+});
+requestAnimationFrame(()=>{
+  const active=document.querySelector(".category-tab.active");
+  if(active) moveCategoryPill(active, false);
+});
+
+const categoryInput=document.getElementById("categoryInput");
+const categoryLimitHint=document.getElementById("categoryLimitHint");
+function updateCategoryLimitHint(){
+  const cat=categoryInput.value;
+  const used=listings.filter(x=>String(x.user_id)===String(authUser?.id) && (x.category||"real")===cat).length;
+  const limit=CATEGORY_LIMITS[cat];
+  categoryLimitHint.textContent=`У тебя ${used} из ${limit} ${CATEGORY_NAMES[cat]} объявлений.`;
+}
+categoryInput.addEventListener("change",updateCategoryLimitHint);
+
+
+document.getElementById("toolbarAdd")?.addEventListener("click",()=>{
+  document.getElementById("fabAdd")?.click();
+});
+
+/* ---- Profile ---- */
+const profileOverlay=document.getElementById("profileOverlay");
+document.getElementById("profileChip").addEventListener("click",()=>{
+  if(!authUser){
+    openAuth("login");
+    return;
+  }
+  if(!isEmailConfirmed()){
+    openAuth("login");
+    document.getElementById("authError").textContent="Сначала подтверди email по ссылке из письма.";
+    return;
+  }
+  document.getElementById("nickInput").value=nickname;
+  document.getElementById("profileEmailHint").textContent=authUser?.email ? "Аккаунт: " + authUser.email : "";
+  profileOverlay.classList.add("open");
+  lockPageScroll();
+});
+document.getElementById("profileCancel").addEventListener("click",()=>{profileOverlay.classList.remove("open");unlockPageScroll();});
+document.getElementById("profileLogout").addEventListener("click",async()=>{
+  await sb.auth.signOut();
+  authUser=null;nickname="";isModerator=false;myActiveBan=null;
+  profileOverlay.classList.remove("open");
+  profileOverlay.classList.remove("nickname-required");
+  unlockPageScroll();
+  restoreGoogleButton();
+  updateAuthUI();renderProfile();renderListings();
+});
+
+let profileSaveBusy=false;
+document.getElementById("profileSave").addEventListener("click",async()=>{
+  if(profileSaveBusy) return;
+  const val=document.getElementById("nickInput").value.trim();
+  if(!val){ alert("Введи никнейм"); return; }
+  if(val.length<2 || val.length>24){ alert("Никнейм должен быть от 2 до 24 символов"); return; }
+
+  // Неполная блокировка НЕ запрещает менять профиль.
+  // Проверяем только полный бан, чтобы заблокированный аккаунт не мог изменить данные
+  // после выдачи полной блокировки. При partial-ban сохранение ника разрешено.
+  const ban=await loadMyBan();
+  if(ban && isBanActive(ban) && String(ban.ban_type).toLowerCase()==="full"){
+    showBanNotice(ban);
+    return;
+  }
+
+  const btn=document.getElementById("profileSave");
+  profileSaveBusy=true;
+  btn.disabled=true;
+  const prevPs=btn.textContent;
+  btn.setAttribute("aria-busy","true");
+  btn.innerHTML='<span class="btn-spinner" aria-hidden="true"></span>Загрузка…';
+  try{
+    await saveProfile(val);
+    // Сохраняем ник в текущем интерфейсе и в базе; бан его не сбрасывает.
+    renderProfile();
+    renderListings();
+    profileOverlay.classList.remove("open");
+    profileOverlay.classList.remove("nickname-required");
+    unlockPageScroll();
+  }catch(e){
+    alert("Не удалось сохранить никнейм: "+e.message);
+  }finally{
+    profileSaveBusy=false;
+    btn.disabled=false;
+    btn.removeAttribute("aria-busy");
+    btn.textContent=prevPs||"Сохранить";
+  }
+});
+
+/* ---- Add listing ---- */
+const addOverlay=document.getElementById("addOverlay");
+const photoInput=document.getElementById("photoInput");
+const photoDrop=document.getElementById("photoDrop");
+document.getElementById("fabAdd").addEventListener("click",async()=>{
+  if(!requireAuth("опубликовать объявление")) return;
+
+  // Сначала проверяем бан. Никнейм не спрашиваем у заблокированного пользователя.
+  if(await blockBannedAction("publish")) return;
+
+  if(!nickname){ profileOverlay.classList.add("open"); return; }
+  pendingPhoto=null; photoInput.value=""; photoDrop.innerHTML='<span id="photoDropText">Нажми, чтобы выбрать фото</span>';
+  document.getElementById("titleInput").value=""; document.getElementById("descInput").value=""; document.getElementById("wantInput").value="";
+  categoryInput.value="real";
+  updateCategoryLimitHint();
+  addOverlay.classList.add("open");
+  lockPageScroll();
+});
+document.getElementById("addCancel").addEventListener("click",()=>{addOverlay.classList.remove("open");unlockPageScroll();});
+photoDrop.addEventListener("click",()=>photoInput.click());
+photoInput.addEventListener("change",()=>{
+  const file=photoInput.files[0]; if(!file) return;
+  if(!file.type.startsWith("image/")){ alert("Выбери изображение"); photoInput.value=""; return; }
+  const reader=new FileReader(); reader.onload=()=>{ pendingPhoto=file; photoDrop.innerHTML=`<img src="${reader.result}" alt="">`; }; reader.readAsDataURL(file);
+});
+
+let addListingBusy=false;
+document.getElementById("addSave").addEventListener("click",async()=>{
+  if(addListingBusy) return;
+  if(!requireAuth("опубликовать объявление")) return;
+
+  const btn=document.getElementById("addSave");
+  addListingBusy=true;
+  const prevLabel=btn.textContent;
+  btn.disabled=true;
+  btn.setAttribute("aria-busy","true");
+  btn.innerHTML='<span class="btn-spinner" aria-hidden="true"></span>Загрузка…';
+
+  let photoPath=null;
+  try{
+    if(await blockBannedAction("publish")){
+      addOverlay.classList.remove("open");
+      unlockPageScroll();
+      return;
+    }
+    if(!nickname){ addOverlay.classList.remove("open"); unlockPageScroll(); profileOverlay.classList.add("open"); lockPageScroll(); return; }
+
+    const title=document.getElementById("titleInput").value.trim();
+    const desc=document.getElementById("descInput").value.trim();
+    const want=document.getElementById("wantInput").value.trim();
+    const category=categoryInput.value;
+    if(!title){ alert("Укажи название товара"); return; }
+    if(!want){ alert("Укажи, на что хочешь поменять"); return; }
+    const used=listings.filter(x=>String(x.user_id)===String(authUser.id) && (x.category||"real")===category).length;
+    if(used>=CATEGORY_LIMITS[category]){
+      alert(`Лимит раздела «${CATEGORY_NAMES[category]}»: ${CATEGORY_LIMITS[category]} на один аккаунт.`);
+      return;
+    }
+    const id=crypto.randomUUID();
+    let photoUrl=null;
+    btn.innerHTML='<span class="btn-spinner" aria-hidden="true"></span>Сохраняем…';
+    if(pendingPhoto){ const uploaded=await uploadPhoto(pendingPhoto,id); photoPath=uploaded.path; photoUrl=uploaded.url; }
+    const { data, error }=await sb.from("listings").insert({ id,user_id:authUser.id,title,description:desc,want,category,photo_url:photoUrl,photo_path:photoPath,author:nickname }).select().single();
+    if(error) throw error;
+    listings.unshift(data); renderListings(); addOverlay.classList.remove("open"); unlockPageScroll();
+  }catch(e){
+    if(photoPath) await deletePhoto(photoPath);
+    const msg=String(e?.message||"");
+    if(msg.includes("listing_category_limit")){
+      alert(`Лимит раздела «${CATEGORY_NAMES[categoryInput.value]}»: ${CATEGORY_LIMITS[categoryInput.value]}.`);
+    }else{
+      alert("Не удалось создать объявление: "+msg);
+    }
+  }finally{
+    addListingBusy=false;
+    btn.disabled=false;
+    btn.removeAttribute("aria-busy");
+    btn.textContent="Разместить";
+  }
+});
+
+
+/* ---- Administration / bans ---- */
+const adminOverlay=document.getElementById("adminOverlay");
+const banOverlay=document.getElementById("banOverlay");
+const adminUserList=document.getElementById("adminUserList");
+const adminUserSearch=document.getElementById("adminUserSearch");
+
+function adminCanUse(){ return !!(authUser && isModerator); }
+function renderAdminUsers(){
+  const q=(adminUserSearch.value||"").trim().toLowerCase();
+  const rows=adminUsers.filter(u=>!q || String(u.nickname||"").toLowerCase().includes(q) || String(u.email||"").toLowerCase().includes(q));
+  if(!rows.length){ adminUserList.innerHTML='<div class="empty"><b>Пользователи не найдены</b><span>Попробуй другой ник или email.</span></div>'; return; }
+  adminUserList.innerHTML=rows.map(u=>{
+    const active=isBanActive(u);
+    const letter=(u.nickname||u.email||"?").trim()[0]?.toUpperCase()||"?";
+    const status=active ? `${banTypeLabel(u.ban_type)} блокировка · ${formatBanUntil(u.ends_at)}` : "Нет блокировки";
+    return `<div class="admin-user-card">
+      <div class="admin-user-avatar">${escapeHtml(letter)}</div>
+      <div class="admin-user-main">
+        <div class="admin-user-name">${escapeHtml(u.nickname||"Без никнейма")}</div>
+        <div class="admin-user-email">${escapeHtml(u.email||"—")}</div>
+        <div class="admin-user-status ${active?"":"ok"}">${escapeHtml(status)}</div>
+      </div>
+      <button class="admin-user-action ${active?"banned":""}" data-user-id="${escapeHtml(u.user_id)}">Редактировать</button>
+    </div>`;
+  }).join("");
+  adminUserList.querySelectorAll(".admin-user-action").forEach(btn=>btn.addEventListener("click",()=>{
+    const u=adminUsers.find(x=>String(x.user_id)===String(btn.dataset.userId));
+    if(u) openBanEditor(u);
+  }));
+}
+async function loadAdminUsers(){
+  if(!adminCanUse()) return;
+  const err=document.getElementById("adminError"); err.textContent="Загружаем пользователей…";
+  try{
+    const {data,error}=await sb.rpc("admin_list_users");
+    if(error) throw error;
+    adminUsers=data||[];
+    err.textContent="";
+    renderAdminUsers();
+  }catch(e){
+    err.textContent=e.message||"Не удалось загрузить список пользователей.";
+    adminUserList.innerHTML="";
+  }
+}
+function openAdmin(){
+  if(!adminCanUse()) return;
+  adminOverlay.classList.add("open");
+  adminUserSearch.value="";
+  loadAdminUsers();
+}
+function closeAdmin(){adminOverlay.classList.remove("open");}
+function openBanEditor(user){
+  if(!adminCanUse()) return;
+  adminSelectedUser=user;
+  const active=isBanActive(user);
+  adminBanType=active ? user.ban_type : "full";
+  adminBanDuration=active ? (user.ends_at?"custom":"permanent") : "permanent";
+  document.getElementById("banUserTitle").textContent=user.nickname||"Без никнейма";
+  document.getElementById("banUserEmail").textContent=user.email||"";
+  document.getElementById("banReason").value=user.reason||"";
+  if(user.ends_at){
+    const d=new Date(user.ends_at);
+    const local=new Date(d.getTime()-d.getTimezoneOffset()*60000).toISOString().slice(0,16);
+    document.getElementById("banCustomUntil").value=local;
+  }else document.getElementById("banCustomUntil").value="";
+  document.querySelectorAll(".ban-type").forEach(x=>x.classList.toggle("active",x.dataset.banType===adminBanType));
+  document.querySelectorAll(".ban-duration").forEach(x=>x.classList.toggle("active",x.dataset.duration===adminBanDuration));
+  document.getElementById("banCustomWrap").style.display=adminBanDuration==="custom"?"block":"none";
+  document.getElementById("banRemove").style.display=active?"block":"none";
+  document.getElementById("banError").textContent="";
+  updateBanPreview();
+  banOverlay.classList.add("open");
+}
+function updateBanPreview(){
+  const type=adminBanType==="full"?"Полная": "Не полная";
+  let until="навсегда";
+  if(adminBanDuration==="1d") until=formatBanUntil(new Date(Date.now()+86400000));
+  if(adminBanDuration==="7d") until=formatBanUntil(new Date(Date.now()+7*86400000));
+  if(adminBanDuration==="30d") until=formatBanUntil(new Date(Date.now()+30*86400000));
+  if(adminBanDuration==="custom"){ const v=document.getElementById("banCustomUntil").value; until=v?formatBanUntil(new Date(v)):"укажи дату"; }
+  document.getElementById("banPreview").textContent=`Будет выдана ${type.toLowerCase()} блокировка · срок: ${until}.`;
+}
+document.getElementById("openAdminBtn").addEventListener("click",openAdmin);
+document.getElementById("adminClose").addEventListener("click",closeAdmin);
+document.getElementById("banClose").addEventListener("click",()=>banOverlay.classList.remove("open"));
+document.getElementById("banCancel").addEventListener("click",()=>banOverlay.classList.remove("open"));
+document.getElementById("banNoticeClose").addEventListener("click",()=>document.getElementById("banNoticeOverlay").classList.remove("open"));
+adminUserSearch.addEventListener("input",renderAdminUsers);
+document.querySelectorAll(".ban-type").forEach(btn=>btn.addEventListener("click",()=>{adminBanType=btn.dataset.banType;document.querySelectorAll(".ban-type").forEach(x=>x.classList.toggle("active",x===btn));updateBanPreview();}));
+document.querySelectorAll(".ban-duration").forEach(btn=>btn.addEventListener("click",()=>{adminBanDuration=btn.dataset.duration;document.querySelectorAll(".ban-duration").forEach(x=>x.classList.toggle("active",x===btn));document.getElementById("banCustomWrap").style.display=adminBanDuration==="custom"?"block":"none";updateBanPreview();}));
+document.getElementById("banCustomUntil").addEventListener("input",updateBanPreview);
+document.getElementById("banSubmit").addEventListener("click",async()=>{
+  if(!adminCanUse()||!adminSelectedUser) return;
+  const err=document.getElementById("banError"),btn=document.getElementById("banSubmit");
+  err.textContent="";
+  let until=null;
+  if(adminBanDuration==="1d") until=new Date(Date.now()+86400000).toISOString();
+  if(adminBanDuration==="7d") until=new Date(Date.now()+7*86400000).toISOString();
+  if(adminBanDuration==="30d") until=new Date(Date.now()+30*86400000).toISOString();
+  if(adminBanDuration==="custom"){
+    const raw=document.getElementById("banCustomUntil").value;
+    if(!raw){err.textContent="Укажи дату окончания блокировки.";return;}
+    const d=new Date(raw); if(Number.isNaN(d.getTime())||d.getTime()<=Date.now()){err.textContent="Дата окончания должна быть в будущем.";return;}
+    until=d.toISOString();
+  }
+  btn.disabled=true;btn.textContent="Сохраняем…";
+  try{
+    const {error}=await sb.rpc("admin_set_user_ban",{p_user_id:adminSelectedUser.user_id,p_ban_type:adminBanType,p_ends_at:until,p_reason:document.getElementById("banReason").value.trim()||null});
+    if(error) throw error;
+    banOverlay.classList.remove("open");
+    await loadAdminUsers();
+  }catch(e){err.textContent=e.message||"Не удалось выдать блокировку.";}
+  finally{btn.disabled=false;btn.textContent="Заблокировать";}
+});
+document.getElementById("banRemove").addEventListener("click",async()=>{
+  if(!adminCanUse()||!adminSelectedUser) return;
+  const err=document.getElementById("banError"); err.textContent="Снимаем блокировку…";
+  try{
+    const {error}=await sb.rpc("admin_clear_user_ban",{p_user_id:adminSelectedUser.user_id});
+    if(error) throw error;
+    banOverlay.classList.remove("open");
+    await loadAdminUsers();
+  }catch(e){err.textContent=e.message||"Не удалось снять блокировку.";}
+});
+
+/* ---- Author listings ---- */
+const authorListingsOverlay=document.getElementById("authorListingsOverlay");
+const authorListingsGrid=document.getElementById("authorListingsGrid");
+
+let authorModalScrollY=0;
+
+function lockAuthorPage(){
+  authorModalScrollY=window.scrollY || window.pageYOffset || 0;
+  document.documentElement.classList.add("author-modal-open");
+  document.body.classList.add("author-modal-open");
+  document.body.style.top=`-${authorModalScrollY}px`;
+}
+
+function unlockAuthorPage(){
+  document.documentElement.classList.remove("author-modal-open");
+  document.body.classList.remove("author-modal-open");
+  document.body.style.top="";
+  window.scrollTo(0,authorModalScrollY);
+}
+
+function openAuthorListings(userId, authorName){
+  const id=String(userId||"");
+  if(!id) return;
+
+  const authorItems=listings
+    .filter(x=>String(x.user_id)===id)
+    .sort((a,b)=>new Date(b.created_at||0)-new Date(a.created_at||0));
+
+  document.getElementById("authorListingsTitle").textContent=authorName || "Объявления автора";
+  document.getElementById("authorListingsMeta").textContent=
+    `${authorItems.length} ${authorItems.length===1 ? "объявление" : (authorItems.length>=2 && authorItems.length<=4 ? "объявления" : "объявлений")}`;
+
+  if(!authorItems.length){
+    authorListingsGrid.innerHTML=`<div class="author-listings-empty">
+      <div><strong>У автора пока нет объявлений</strong><br><span>Новые объявления появятся здесь.</span></div>
+    </div>`;
+  }else{
+    authorListingsGrid.innerHTML=authorItems.map(raw=>{
+      const x=normalizeListing(raw);
+      return `<article class="author-listing-card" data-id="${x.id}">
+        ${x.photo
+          ? `<img class="author-listing-photo" src="${escapeHtml(x.photo)}" alt="" loading="lazy">`
+          : `<div class="author-listing-photo placeholder">□</div>`}
+        <div class="author-listing-card-body">
+          <span class="category-badge">${escapeHtml(CATEGORY_LABELS[x.category]||CATEGORY_LABELS.real)}</span>
+          <h3>${escapeHtml(x.title)}</h3>
+          ${x.desc ? `<p>${escapeHtml(x.desc)}</p>` : ""}
+          <span class="want">⇄ ${escapeHtml(x.want)}</span>
+        </div>
+      </article>`;
+    }).join("");
+
+    authorListingsGrid.querySelectorAll(".author-listing-card").forEach(card=>{
+      card.addEventListener("click",()=>{
+        // Сначала полностью снимаем блокировку окна автора,
+        // затем открываем карточку объявления.
+        // Иначе detail-lock накладывался поверх author-lock.
+        closeAuthorListings();
+        openDetail(card.dataset.id);
+      });
+    });
+  }
+
+  lockAuthorPage();
+  authorListingsOverlay.classList.add("open");
+}
+
+function closeAuthorListings(){
+  authorListingsOverlay.classList.remove("open");
+  unlockAuthorPage();
+}
+
+document.getElementById("authorListingsCloseBottom").addEventListener("click",closeAuthorListings);
+
+/* ---- Detail ---- */
+const detailOverlay=document.getElementById("detailOverlay");
+let detailScrollY=0;
+
+function lockPageForDetail(){
+  detailScrollY=window.scrollY || window.pageYOffset || 0;
+  document.documentElement.classList.add("detail-open");
+  document.body.classList.add("detail-open");
+  document.body.style.top=`-${detailScrollY}px`;
+}
+
+function unlockPageForDetail(){
+  document.documentElement.classList.remove("detail-open");
+  document.body.classList.remove("detail-open");
+  document.body.style.top="";
+  window.scrollTo(0,detailScrollY);
+}
+
+function openDetail(id){
+  const raw=listings.find(x=>String(x.id)===String(id)); if(!raw) return;
+  const item=normalizeListing(raw); currentListingId=id;
+
+  const photoWrap=document.getElementById("detailPhotoWrap");
+  photoWrap.innerHTML=item.photo
+    ? `<img class="detail-photo" src="${item.photo}" alt="" loading="eager">`
+    : `<div class="detail-photo-placeholder" aria-hidden="true"></div>`;
+
+  document.getElementById("detailTitle").textContent=item.title;
+  document.getElementById("detailCategory").textContent=CATEGORY_LABELS[item.category]||CATEGORY_LABELS.real;
+  document.getElementById("detailWant").textContent="⇄ "+item.want;
+  document.getElementById("detailDesc").textContent=item.desc || "Без описания.";
+  document.getElementById("detailAuthor").textContent=item.author;
+  document.getElementById("detailAvatar").textContent=(item.author||"?")[0].toUpperCase();
+  const detailAuthorRow=document.querySelector("#detailOverlay .detail-author");
+  if(detailAuthorRow){
+    detailAuthorRow.dataset.authorId=String(item.user_id||"");
+    detailAuthorRow.dataset.authorName=item.author||"Автор";
+  }
+  document.getElementById("detailInfoCategory").textContent=CATEGORY_LABELS[item.category]||CATEGORY_LABELS.real;
+  document.getElementById("detailInfoWant").textContent=item.want || "Не указано";
+  const detailDate=item.createdAt ? new Date(item.createdAt).toLocaleString("ru-RU",{day:"2-digit",month:"2-digit",year:"numeric",hour:"2-digit",minute:"2-digit"}) : "Не указано";
+  document.getElementById("detailInfoDate").textContent=detailDate;
+
+  const isOwnListing = !!authUser && String(item.user_id) === String(authUser.id);
+  document.getElementById("detailChatBtn").style.display = isOwnListing ? "none" : "flex";
+
+  // На всякий случай снимаем оставшийся lock автора перед detail-lock.
+  if(document.body.classList.contains("author-modal-open")){
+    unlockAuthorPage();
+    authorListingsOverlay.classList.remove("open");
+  }
+  lockPageForDetail();
+  detailOverlay.classList.add("open");
+}
+
+const closeDetail=()=>{
+  detailOverlay.classList.remove("open");
+  unlockPageForDetail();
+  currentListingId=null;
+};
+document.getElementById("detailCloseBottom").addEventListener("click",closeDetail);
+
+document.querySelector("#detailOverlay .detail-author").addEventListener("click",e=>{
+  e.stopPropagation();
+  const row=e.currentTarget;
+  if(row.dataset.authorId){
+    closeDetail();
+    openAuthorListings(row.dataset.authorId,row.dataset.authorName);
+  }
+});
+
+/* ---- Chats 2.0 ---- */
+const chatsOverlay=document.getElementById("chatsOverlay");
+const chatOverlay=document.getElementById("chatOverlay");
+const chatSearchInput=document.getElementById("chatSearchInput");
+const chatUnreadCount=document.getElementById("chatUnreadCount");
+let currentChatPartnerId=null;
+let currentChatOwnerId=null;
+let chatListCache=[];
+let chatReadMarks={};
+const CHAT_READ_KEY="exchange101_chat_read_v2";
+
+function loadChatReadMarks(){
+  try{ chatReadMarks=JSON.parse(localStorage.getItem(CHAT_READ_KEY)||"{}"); }
+  catch{ chatReadMarks={}; }
+}
+function saveChatReadMarks(){
+  try{ localStorage.setItem(CHAT_READ_KEY,JSON.stringify(chatReadMarks)); }catch{}
+}
+function chatKey(listingId,partnerId){ return String(listingId)+"::"+String(partnerId); }
+function markChatRead(listingId,partnerId,createdAt){
+  if(!listingId || !partnerId) return;
+  chatReadMarks[chatKey(listingId,partnerId)]=createdAt||new Date().toISOString();
+  saveChatReadMarks();
+}
+function isChatUnread(chat){
+  const mark=chatReadMarks[chatKey(chat.listing_id,chat.partnerId)];
+  return !mark || new Date(chat.created_at)>new Date(mark);
+}
+function formatChatTime(iso){
+  const d=new Date(iso), now=new Date();
+  if(d.toDateString()===now.toDateString()) return d.toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+  const y=new Date(now); y.setDate(now.getDate()-1);
+  if(d.toDateString()===y.toDateString()) return "вчера";
+  return d.toLocaleDateString("ru-RU",{day:"2-digit",month:"2-digit"});
+}
+function formatMessageTime(iso){
+  return new Date(iso).toLocaleTimeString("ru-RU",{hour:"2-digit",minute:"2-digit"});
+}
+function formatChatDate(iso){
+  const d=new Date(iso), now=new Date();
+  if(d.toDateString()===now.toDateString()) return "Сегодня";
+  const y=new Date(now); y.setDate(now.getDate()-1);
+  if(d.toDateString()===y.toDateString()) return "Вчера";
+  return d.toLocaleDateString("ru-RU",{day:"numeric",month:"long",year:d.getFullYear()!==now.getFullYear()?"numeric":undefined});
+}
+function chatInitial(name){ return escapeHtml((String(name||"?").trim()[0]||"?").toUpperCase()); }
+function resizeChatInput(){
+  const el=document.getElementById("chatInput");
+  if(!el) return;
+  el.style.height="auto";
+  el.style.height=Math.min(el.scrollHeight,120)+"px";
+}
+function updateUnreadHeader(chats=chatListCache){
+  const count=chats.filter(isChatUnread).length;
+  chatUnreadCount.textContent=count>99?"99+":String(count);
+  chatUnreadCount.style.display=count?"inline-flex":"none";
+  const btn=document.getElementById("openChatsBtn");
+  if(btn && authUser){
+    const label=btn.querySelector("span:last-child");
+    if(label) label.textContent=count?`Чаты · ${count}`:"Чаты";
+    else btn.textContent=count?`Чаты · ${count}`:"Чаты";
+  }
+}
+
+function buildChatObjects(data){
+  const grouped=new Map();
+  const meId=String(authUser.id);
+  for(const m of (data||[])){
+    const listing=listings.find(x=>String(x.id)===String(m.listing_id));
+    if(!listing) continue;
+    const senderId=String(m.user_id);
+    const recipientId=m.recipient_id ? String(m.recipient_id) : null;
+    if(!recipientId || (senderId!==meId && recipientId!==meId)) continue;
+    const partnerId=senderId===meId?recipientId:senderId;
+    if(!partnerId || partnerId===meId) continue;
+    const key=chatKey(m.listing_id,partnerId);
+    if(!grouped.has(key)){
+      const ownerId=String(listing.user_id);
+      grouped.set(key,{...m,listing,partnerId,ownerId,isOwnListing:ownerId===meId});
+    }
+  }
+  return [...grouped.values()].sort((a,b)=>new Date(b.created_at)-new Date(a.created_at));
+}
+
+function renderChatList(){
+  const box=document.getElementById("chatList");
+  const query=(chatSearchInput.value||"").trim().toLowerCase();
+  const filtered=chatListCache.filter(c=>{
+    const name=c.isOwnListing?c.author:(c.listing?.author||"Владелец");
+    return !query || [name,c.listing?.title,c.text].some(v=>String(v||"").toLowerCase().includes(query));
+  });
+  updateUnreadHeader(chatListCache);
+  if(!filtered.length){
+    box.innerHTML=`<div class="chat-list-empty"><div class="chat-list-empty-icon"></div><b>${query?"Ничего не найдено":"Здесь пока тихо"}</b><br>${query?"Попробуй другой запрос.":"Открой объявление и начни переписку — чат появится здесь."}</div>`;
+    return;
+  }
+  box.innerHTML=filtered.map(c=>{
+    const name=c.isOwnListing?c.author:(c.listing?.author||"Владелец");
+    const unread=isChatUnread(c);
+    return `<button class="chat-list-item ${unread?"unread":""}" data-listing-id="${escapeHtml(String(c.listing_id))}" data-user-id="${escapeHtml(String(c.partnerId))}">
+      <div class="chat-list-avatar">${chatInitial(name)}</div>
+      <div class="chat-list-main">
+        <div class="chat-list-line"><span class="chat-list-name">${escapeHtml(name)}</span></div>
+        <div class="chat-list-title">${escapeHtml(c.listing?.title||"Объявление")}</div>
+        <div class="chat-list-preview">${String(c.user_id)===String(authUser.id)?"Вы: ":""}${escapeHtml(c.text)}</div>
+      </div>
+      <div class="chat-list-meta"><span class="chat-list-time">${formatChatTime(c.created_at)}</span><span class="chat-unread-dot">●</span></div>
+    </button>`;
+  }).join("");
+  box.querySelectorAll(".chat-list-item").forEach(btn=>btn.addEventListener("click",()=>openChatFromList(btn.dataset.listingId,btn.dataset.userId)));
+}
+
+async function loadChatList(){
+  const box=document.getElementById("chatList");
+  if(!authUser) return;
+  box.innerHTML='<div class="chat-list-empty"><div class="chat-list-empty-icon">⏳</div>Загружаем чаты…</div>';
+  const listingIds=listings.map(x=>x.id);
+  if(!listingIds.length){ chatListCache=[]; renderChatList(); return; }
+  const {data,error}=await sb.from("messages")
+    .select("id,listing_id,user_id,recipient_id,author,text,created_at")
+    .in("listing_id",listingIds)
+    .order("created_at",{ascending:false});
+  if(error){
+    box.innerHTML='<div class="chat-list-empty"><div class="chat-list-empty-icon">⚠️</div>Не удалось загрузить чаты.</div>';
+    console.error(error); return;
+  }
+  chatListCache=buildChatObjects(data);
+  renderChatList();
+}
+
+async function openChatFromList(listingId,partnerId){
+  const item=listings.find(x=>String(x.id)===String(listingId));
+  if(!item || !authUser) return;
+  currentListingId=String(listingId);
+  currentChatPartnerId=String(partnerId);
+  currentChatOwnerId=String(item.user_id);
+  chatOpenedFromList=true; chatOpenedFromDetail=false;
+  const chat=chatListCache.find(c=>String(c.listing_id)===String(listingId)&&String(c.partnerId)===String(partnerId));
+  const partnerName=String(item.user_id)===String(authUser.id)?(chat?.author||"Пользователь"):(item.author||"Владелец");
+  setChatHeader(partnerName,item);
+  chatsOverlay.classList.remove("open");
+  chatOverlay.classList.add("open");
+  const draftKey="exchange101_chat_draft_"+chatKey(listingId,partnerId);
+  document.getElementById("chatInput").value=localStorage.getItem(draftKey)||"";
+  resizeChatInput();
+  await renderChat(listingId,partnerId);
+}
+
+function setChatHeader(partnerName,item){
+  document.getElementById("chatHeader").textContent=partnerName;
+  document.getElementById("chatSubheader").textContent="Объявление · "+(item.title||"Без названия");
+  document.getElementById("chatAvatar").textContent=chatInitial(partnerName).replace(/&[^;]+;/g,"?");
+  document.getElementById("chatListingMiniTitle").textContent=item.title||"Объявление";
+  document.getElementById("chatListingMiniWant").textContent=item.want?"⇄ "+item.want:"";
+  const photo=item.photo_url||item.photo||"";
+  document.getElementById("chatListingMiniPhoto").innerHTML=photo?`<img class="chat-listing-mini-photo" src="${escapeHtml(photo)}" alt="">`:`<span class="chat-listing-mini-photo" style="display:flex;align-items:center;justify-content:center;font-size:16px;"></span>`;
+}
+
+async function renderChat(listingId,partnerId=null){
+  const item=listings.find(x=>String(x.id)===String(listingId));
+  if(!item || !authUser) return;
+  const meId=String(authUser.id);
+  const otherId=String(partnerId||item.user_id);
+  if(otherId===meId){
+    document.getElementById("chatMessages").innerHTML='<div class="chat-empty"><span class="chat-empty-icon">🙈</span>Нельзя открыть чат со своим объявлением.</div>';
+    return;
+  }
+  currentListingId=listingId; currentChatPartnerId=otherId; currentChatOwnerId=String(item.user_id);
+  const {data,error}=await sb.from("messages")
+    .select("id,user_id,recipient_id,author,text,created_at")
+    .eq("listing_id",listingId)
+    .order("created_at",{ascending:true});
+  const box=document.getElementById("chatMessages");
+  if(error){box.innerHTML='<div class="chat-empty"><span class="chat-empty-icon">⚠️</span>Не удалось загрузить сообщения.</div>';console.error(error);return;}
+  const msgs=(data||[]).filter(m=>{
+    const uid=String(m.user_id), rid=m.recipient_id?String(m.recipient_id):"";
+    return (uid===meId&&rid===otherId)||(uid===otherId&&rid===meId);
+  });
+  if(!msgs.length){
+    box.innerHTML='<div class="chat-empty"><span class="chat-empty-icon">👋</span><b>Начни разговор</b><br>Спроси про состояние, обмен или договоритесь о встрече.</div>';
+    markChatRead(listingId,otherId,new Date().toISOString());
+    return;
+  }
+  let html="", lastDate="", lastSender="";
+  for(const m of msgs){
+    const dateKey=new Date(m.created_at).toDateString();
+    if(dateKey!==lastDate){ html+=`<div class="chat-date-separator">${formatChatDate(m.created_at)}</div>`; lastDate=dateKey; lastSender=""; }
+    const mine=String(m.user_id)===meId;
+    html+=`<div class="msg-row ${mine?"me":"them"}"><div class="msg ${mine?"me":"them"}"><span class="msg-text">${escapeHtml(m.text)}</span><span class="msg-time">${formatMessageTime(m.created_at)}</span></div></div>`;
+    lastSender=m.user_id;
+  }
+  box.innerHTML=html;
+  requestAnimationFrame(()=>box.scrollTop=box.scrollHeight);
+  const last=msgs[msgs.length-1];
+  markChatRead(listingId,otherId,last.created_at);
+  updateUnreadHeader();
+  resizeChatInput();
+}
+
+let chatOpenedFromDetail=false;
+let chatOpenedFromList=false;
+let v14ChatScrollY=0;
+function v14LockChatPage(){
+  if(!document.documentElement.classList.contains("v14-chat-lock")) v14ChatScrollY=window.scrollY||0;
+  document.documentElement.classList.add("v14-chat-lock");
+  document.body.classList.add("v14-chat-lock");
+}
+function v14UnlockChatPage(){
+  document.documentElement.classList.remove("v14-chat-lock");
+  document.body.classList.remove("v14-chat-lock");
+  window.scrollTo(0,v14ChatScrollY);
+}
+
+document.getElementById("detailChatBtn").addEventListener("click",async()=>{
+  if(!requireAuth("написать пользователю")) return;
+
+  // Полный бан должен показать блокировку сразу, а не требование никнейма.
+  // При частичном бане сообщение разрешено — чат открывается как обычно.
+  if(await blockBannedAction("message")) return;
+
+  const raw=listings.find(x=>String(x.id)===String(currentListingId));
+  if(!raw) return;
+  const item=normalizeListing(raw);
+  if(String(item.user_id)===String(authUser.id)) return;
+  currentChatOwnerId=String(item.user_id); currentChatPartnerId=String(item.user_id);
+  currentListingId=String(item.id);
+  chatOpenedFromDetail=true; chatOpenedFromList=false;
+  setChatHeader(item.author,item);
+  detailOverlay.classList.remove("open");
+  v14LockChatPage();
+  chatOverlay.classList.add("open");
+  const draftKey="exchange101_chat_draft_"+chatKey(item.id,item.user_id);
+  document.getElementById("chatInput").value=localStorage.getItem(draftKey)||"";
+  resizeChatInput();
+  await renderChat(item.id,item.user_id);
+  document.getElementById("chatInput").focus();
+});
+
+document.getElementById("openChatsBtn").addEventListener("click",async()=>{
+  if(!authUser){ openAuth("login"); return; }
+  if(!isEmailConfirmed()){ openAuth("login"); document.getElementById("authError").textContent="Сначала подтверди email по ссылке из письма."; return; }
+  chatOpenedFromDetail=false; chatOpenedFromList=false;
+  v14LockChatPage();
+  chatsOverlay.classList.add("open");
+  chatSearchInput.value="";
+  await loadChatList();
+});
+
+document.getElementById("chatsClose").addEventListener("click",()=>{
+  chatsOverlay.classList.remove("open");
+  v14UnlockChatPage();
+});
+
+document.getElementById("chatExit").addEventListener("click",()=>{
+  chatOverlay.classList.remove("open");
+  if(chatOpenedFromDetail && currentListingId){
+    v14UnlockChatPage();
+    detailOverlay.classList.add("open");
+    return;
+  }
+  if(chatOpenedFromList){
+    chatOpenedFromList=false;
+    chatsOverlay.classList.add("open");
+    return;
+  }
+  v14UnlockChatPage();
+});
+
+document.getElementById("chatClose").addEventListener("click",()=>{
+  chatOverlay.classList.remove("open");
+  if(chatOpenedFromList){
+    chatOpenedFromList=false;
+    chatsOverlay.classList.add("open");
+    return;
+  }
+  if(chatOpenedFromDetail && currentListingId){
+    chatOpenedFromDetail=false;
+    v14UnlockChatPage();
+    detailOverlay.classList.add("open");
+    return;
+  }
+  v14UnlockChatPage();
+});
+
+document.getElementById("chatListingMini").addEventListener("click",()=>{
+  if(currentListingId){ chatOverlay.classList.remove("open"); v14UnlockChatPage(); openDetail(currentListingId); }
+});
+
+chatSearchInput.addEventListener("input",renderChatList);
+const chatInput=document.getElementById("chatInput");
+chatInput.addEventListener("input",()=>{resizeChatInput(); localStorage.setItem("exchange101_chat_draft_"+chatKey(currentListingId||"",currentChatPartnerId||""),chatInput.value);});
+chatInput.addEventListener("keydown",e=>{
+  if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();sendChatMsg();}
+});
+document.getElementById("chatSend").addEventListener("click",sendChatMsg);
+
+let chatSendBusy=false;
+function appendOptimisticMessage(text){
+  const box=document.getElementById("chatMessages");
+  if(!box) return null;
+  // Remove empty state if present
+  const empty=box.querySelector(".chat-empty");
+  if(empty) empty.remove();
+  const now=new Date();
+  const row=document.createElement("div");
+  row.className="msg-row me";
+  row.dataset.optimistic="1";
+  row.innerHTML=`<div class="msg me"><span class="msg-text"></span><span class="msg-time">${formatMessageTime(now.toISOString())}</span></div>`;
+  row.querySelector(".msg-text").textContent=text;
+  box.appendChild(row);
+  requestAnimationFrame(()=>{ box.scrollTop=box.scrollHeight; });
+  return row;
+}
+async function sendChatMsg(){
+  if(chatSendBusy) return;
+  if(!authUser) return;
+
+  // Full ban already ends the session; partial ban allows messages — no network check here.
+  if(myActiveBan && isBanActive(myActiveBan) && String(myActiveBan.ban_type).toLowerCase()==="full"){
+    showBanNotice(myActiveBan);
+    return;
+  }
+
+  const input=document.getElementById("chatInput");
+  const btn=document.getElementById("chatSend");
+  const text=input.value.trim();
+  if(!text || !currentListingId || !currentChatPartnerId) return;
+  const meId=String(authUser.id), partnerId=String(currentChatPartnerId);
+  if(meId===partnerId){alert("Нельзя отправить сообщение самому себе.");return;}
+
+  chatSendBusy=true;
+  btn.disabled=true;
+  btn.setAttribute("aria-busy","true");
+  btn.innerHTML='<span class="btn-spinner" aria-hidden="true"></span>';
+  input.disabled=true;
+
+  input.value="";
+  localStorage.removeItem("exchange101_chat_draft_"+chatKey(currentListingId,currentChatPartnerId));
+  resizeChatInput();
+
+  // Show message instantly, then write to server in background
+  const optimistic=appendOptimisticMessage(text);
+
+  try{
+    const {error}=await sb.from("messages").insert({listing_id:currentListingId,user_id:authUser.id,recipient_id:partnerId,author:nickname||"Пользователь",text});
+    if(error){
+      if(optimistic) optimistic.remove();
+      input.value=text;
+      resizeChatInput();
+      alert("Не удалось отправить сообщение: "+error.message);
+      return;
+    }
+    // Soft refresh without blocking the input for long
+    renderChat(currentListingId,currentChatPartnerId).catch(()=>{});
+  }catch(e){
+    if(optimistic) optimistic.remove();
+    input.value=text;
+    resizeChatInput();
+    alert("Не удалось отправить сообщение: "+(e.message||e));
+  }finally{
+    chatSendBusy=false;
+    btn.disabled=false;
+    btn.removeAttribute("aria-busy");
+    btn.textContent="➤";
+    input.disabled=false;
+    try{input.focus();}catch(e){}
+  }
+}
+
+let listingsChannel,messagesChannel;
+
+function updateOnlineCount(){
+  const el=document.getElementById("onlineCount");
+  if(!el || !onlineChannel) return;
+  const state=onlineChannel.presenceState();
+  const uniqueKeys=new Set();
+  Object.values(state||{}).forEach(presences=>{
+    (presences||[]).forEach(p=>{
+      uniqueKeys.add(String(
+        p?.session_id || p?.presence_ref || JSON.stringify(p)
+      ));
+    });
+  });
+  el.textContent=String(Math.max(1,uniqueKeys.size));
+}
+
+async function subscribeOnlinePresence(){
+  if(onlineChannel) return;
+
+  onlineChannel=sb.channel("exchange101-online",{
+    config:{presence:{key:onlinePresenceKey}}
+  });
+
+  onlineChannel
+    .on("presence",{event:"sync"},updateOnlineCount)
+    .on("presence",{event:"join"},updateOnlineCount)
+    .on("presence",{event:"leave"},updateOnlineCount);
+
+  onlineChannel.subscribe(async(status)=>{
+    if(status!=="SUBSCRIBED") return;
+    try{
+      await onlineChannel.track({
+        session_id:onlinePresenceKey,
+        user_id:authUser?.id || null,
+        joined_at:new Date().toISOString()
+      });
+      updateOnlineCount();
+    }catch(e){
+      console.warn("Счётчик онлайн недоступен:",e);
+      const el=document.getElementById("onlineCount");
+      if(el) el.textContent="1";
+    }
+  });
+}
+
+function subscribeRealtime(){
+  listingsChannel=sb.channel("public-listings")
+    .on("postgres_changes",{event:"*",schema:"public",table:"listings"},async()=>{
+      await loadListings(); renderListings();
+      if(chatsOverlay.classList.contains("open")) await loadChatList();
+      if(chatOverlay.classList.contains("open")&&currentListingId){
+        const item=listings.find(x=>String(x.id)===String(currentListingId));
+        if(item) await renderChat(currentListingId,currentChatPartnerId);
+      }
+    }).subscribe();
+  messagesChannel=sb.channel("listing-messages")
+    .on("postgres_changes",{event:"*",schema:"public",table:"messages"},async payload=>{
+      const changedId=payload.new?.listing_id||payload.old?.listing_id;
+      if(chatOverlay.classList.contains("open")&&currentListingId&&String(changedId)===String(currentListingId)){
+        await renderChat(currentListingId,currentChatPartnerId);
+      }
+      if(chatsOverlay.classList.contains("open")) await loadChatList();
+      else if(authUser) await refreshChatUnreadSilently();
+    }).subscribe();
+}
+async function refreshChatUnreadSilently(){
+  const listingIds=listings.map(x=>x.id);
+  if(!listingIds.length){updateUnreadHeader([]);return;}
+  const {data}=await sb.from("messages").select("id,listing_id,user_id,recipient_id,author,text,created_at").in("listing_id",listingIds).order("created_at",{ascending:false});
+  if(data){chatListCache=buildChatObjects(data);updateUnreadHeader(chatListCache);}
+}
+
+loadChatReadMarks();
+
+async function init(){
+  showInitialMarketLoading();
+  try{
+    await restoreSession();
+    await subscribeOnlinePresence();
+    await loadModeratorStatus();
+    if(authUser) await loadProfile();
+    if(authUser){
+      const activeBan=await loadMyBan();
+      if(activeBan && isBanActive(activeBan)){
+        showBanNotice(activeBan);
+        if(activeBan.ban_type==="full"){
+          await sb.auth.signOut();
+          authUser=null; nickname=""; isModerator=false; myActiveBan=null;
+        }
+      }
+    }
+    await loadListings();
+    updateAuthUI();
+    renderProfile();
+    renderListings();
+    if(authUser) promptNicknameIfNeeded();
+    subscribeRealtime();
+  }catch(e){
+    console.error(e);
+    document.getElementById("grid").innerHTML='<div class="empty" style="grid-column:1/-1"><b>Не удалось загрузить объявления</b>'+escapeHtml(e.message||"Ошибка Supabase")+'</div>';
+  }
+}
+
+init();
+</script>
+</body>
+</html>
